@@ -1,0 +1,216 @@
+% 编译使用xelatex
+\documentclass{ctexart}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\title{信号处理原理}
+
+\DeclareMathOperator{\CTFT}{\mathbf{CTFT}}
+\DeclareMathOperator{\ICTFT}{\mathbf{ICTFT}}
+\DeclareMathOperator{\DTFT}{\mathbf{DTFT}}
+\DeclareMathOperator{\IDTFT}{\mathbf{IDTFT}}
+\DeclareMathOperator{\DFT}{\mathbf{DFT}}
+\DeclareMathOperator{\IDFT}{\mathbf{IDFT}}
+\DeclareMathOperator{\ENERGY}{\mathbf{ENERGY}}
+\DeclareMathOperator{\POWER}{\mathbf{POWER}}
+\DeclareMathOperator{\D}{\mathbf{D}}
+\DeclareMathOperator{\ud}{\mathrm{d}}
+\DeclareMathOperator{\Rset}{\mathbb{R}}
+\DeclareMathOperator{\Zset}{\mathbb{Z}}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{记号与定义}
+\subsection{记号}
+    \begin{table}[ht!]
+        \centering
+        \begin{tabular}{|c|c|}
+            \hline
+            $u(t)$ & 单位阶跃信号\\ \hline
+            $G(t)$ & 原点单位脉冲信号, $G(t) = \begin{cases}
+                1 & -\frac{1}{2} < t < \frac{1}{2}\\
+                0 & otherwise \end{cases}$
+                \\ \hline
+            $Sa(t$) & Sample函数, $Sa(t) = \begin{cases}
+                \frac{\sin t}{t} & t \neq 0 \\
+                1 & t = 0 \end{cases}$ \\ \hline
+            $\Delta_{T} (t)$ & 周期单位冲激序列, $\Delta_T(t) = \sum_{n} \delta(t - n T)$.\\ \hline
+        \end{tabular}
+    \end{table}
+\subsection{定义}
+\paragraph{信号能量} 对于连续函数, $\ENERGY[f(t)] = \int_{-\infty}^{+\infty} \|f(t)\|^2 \ud t$.
+    对于离散函数, $\ENERGY[x(t)] = \sum_{n = -\infty}^{\infty} \|x(n)\|^2$.
+\paragraph{信号功率} 对于连续函数, $\POWER[f(t)] = \lim_{T \to \infty} \frac{1}{T} \int_{-T/2}^{+T/2} \|f(t)\|^2 \ud t$.
+    对于离散函数, $\POWER[x(t)] = \lim_{N \to \infty} \frac{1}{2N + 1} \sum_{n = -N}^{N} \|x(n)\|^2$.
+\subsection{其他}
+    \begin{description}
+        \item[Dirichlet积分] $\int_{-\infty}^{\infty} Sa(t) \ud t = \pi$
+        \item[Gaussian积分] $\int_{-\infty}^{\infty} e^{-t^2} \ud t = \sqrt{\pi}$
+        \item[冲激函数的筛选特性] $\int_{-\infty}^{\infty} f(t) \delta(t - t_0) = f(t_0)$
+    \end{description}
+
+
+\section{CTFT}
+\subsection{定义}
+注意信号的傅里叶变换不一定存在.
+\paragraph{对于非周期信号} $f(t)$的CTFT定义为 \[
+    \CTFT[f(t)] = F(\omega) = \int_{-\infty}^{+\infty} f(t)\; e^{-j \omega t} \ud t \]
+    逆变换定义为 \[
+    \ICTFT[F(\omega)] = f(t) = \frac{1}{2\pi} \int_{-\infty}^{+\infty} f(t)\; e^{j \omega t} \ud t \]
+
+\paragraph{对于周期信号}
+    设周期为$T_1$, 周期信号$f$的单周期截断是$f_0$, 则有 \[
+        \CTFT[ f(t) ] = \omega_1 \Delta_{\omega_1}(\omega) \CTFT[ f_0(t) ] ,\quad \omega_1 = \frac{2\pi}{T_1}  \]
+
+\subsection{性质}
+    \begin{description}
+        \item[线性性] $\displaystyle \CTFT[\alpha f + \beta g] = \alpha \CTFT[f] + \beta \CTFT[g]$
+        \item[唯一性] $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$
+        \item[对偶性] $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(t)$
+        \item[反褶] $\displaystyle \CTFT[f(-t)] = F(-\omega)$
+        \item[共轭] $\displaystyle \CTFT[f^*(t)] = F^*(-\omega)$
+        \item[压阔] $\displaystyle \CTFT[f(at)] = \frac{1}{|a|} F(\frac{\omega}{a})$
+        \item[时移] $\displaystyle \CTFT[f(t + \tau)] = F(\omega) e^{j \omega \tau}$
+        \item[频移] $\displaystyle \CTFT[f(t) e^{j \omega_0 t}] = F(\omega - \omega_0)$
+        \item[微分] $\displaystyle \CTFT[\D f(t)] = j \omega F(\omega),\qquad \CTFT[-j \omega f(t)] = \D F(\omega)$
+        \item[卷积] $\displaystyle \CTFT[f g] = \frac{1}{2\pi} \CTFT[f] * \CTFT[g],\qquad \CTFT[f * g] = \CTFT[f] \CTFT[g]$
+    \end{description}
+
+\subsection{常见信号的傅里叶变换}
+    \begin{table}[ht!]
+        \centering
+        \begin{tabular}{|c|c|}
+                \hline $\displaystyle f(t)$ & $\displaystyle F(\omega)$ \\ \hline
+                $\displaystyle e^{-at}\,u(t),\quad a > 0$ & $\displaystyle \frac{1}{a + j \omega}$ \\ \hline
+                $\displaystyle e^{at}\,u(t),\quad a \in \Rset$ & 不存在 \\ \hline
+                $\displaystyle e^{j \omega_0 t},\quad a \in \Rset$ & $\displaystyle 2 \pi \delta(\omega - \omega_0)$ \\ \hline
+                $\displaystyle G(t)$ & $\displaystyle Sa(\omega / 2)$ \\ \hline
+                $\displaystyle \delta(t)$ & $\displaystyle 1$ \\ \hline
+                $\displaystyle 1$ & $\displaystyle 2\pi \delta(\omega)$ \\ \hline
+                $\displaystyle u(t)$ & $\displaystyle \pi\delta(\omega) + \frac{1}{j\omega}$ \\ \hline
+                $\displaystyle \cos (\omega_0 t)$ & $\displaystyle \pi \delta(\omega - \omega_0) + \pi \delta(\omega + \omega_0)$ \\ \hline
+                $\displaystyle \sin (\omega_0 t)$ & $\displaystyle j \pi \delta(\omega + \omega_0) - j \pi \delta(\omega - \omega_0)$ \\ \hline
+                $\displaystyle \Delta_{T_1} (t)$ & $\displaystyle \omega_1 \Delta_{\omega_1}(\omega),\quad \omega_1 = \frac{2\pi}{T_1}$ \\ \hline
+        \end{tabular}
+    \end{table}
+
+\subsection{抽样信号}
+\paragraph{抽样过程} 自然地, 采用冲激串抽样 $f_S(T) = f(t)\cdot \Delta_{T_S}(t)$
+\paragraph{抽样后傅里叶变换} $\displaystyle F_S(\omega) = \CTFT[ f_S(t) ] = \frac{1}{T_S} \sum_n F(\omega - n \omega_S)$
+\paragraph{抽样定理} 对于截止频率为$\omega_c$的信号$f(t)$, 若$\omega_S \ge 2 \omega_c$, 则$F_S$是周期为$\omega_S$的函数,
+    并且$\forall \omega \in [-\frac{\omega_S}{2}, \frac{\omega_S}{2}]\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega)$. 其中$2\omega_c$称为Nyquist频率.
+
+
+\section{DTFT}
+\subsection{前置定理}
+\paragraph{抽样离散定理} 由定义可证下式
+    \[F_S(\omega) = \sum_{n=-\infty}^{\infty} f(nT_S) e^{- j \omega n T_S}\]过程如下
+    \begin{align*}
+        F_S(\omega) &= \int_{-\infty}^{\infty} f(t) \cdot \Delta_{T_S}(t) \cdot e^{-j \omega t} \ud t\\
+            &= \int_{-\infty}^{\infty} f(t) \cdot e^{-j \omega t} \cdot \Delta_{T_S}(t) \ud t\\
+            &= \sum_{n=-\infty}^{\infty} f(nT_S) e^{-j \omega nT_S}
+    \end{align*}
+    可以看成是一种抽样近似的思想, 因为在Nyquist区间内, 有\begin{eqnarray*}
+        F(\omega) &=& \frac{1}{T_S} F_S(\omega)\\
+        \int_{-\infty}^{+\infty} f(t) e^{-j \omega t} \ud t &=& \frac{1}{T_S} \sum_{n = -\infty}^{+\infty} f(nT_S) e^{-j \omega nT_S}
+    \end{eqnarray*}
+
+\subsection{定义} $x(n)$为频率/时间归一化的信号, $x(n) = f(nT_S)$, 则有\[
+    \DTFT[x(n)] = \sum_{n = -\infty}^{+\infty} x(n) e^{-j \omega n} \]
+    并且定义逆变换为 \[
+    \IDTFT[X(\omega)] = \frac{1}{2\pi} \int_{-\pi}^{\pi} X(\omega) e^{j \omega n} \ud \omega\]
+
+\subsection{时间/频率归一化}
+    CTFT处理, $f(t), F(\omega)$中的$t, \omega$是物理空间中的时间/频率, 称为模拟时间/频率.
+    DTFT中, 以上定义中$x(n), X(\omega)$中的$n, \omega$是数字时间/频率.
+    易证有如下的对应关系, 此即数字时间/频率和模拟时间/频率的对应关系
+    \begin{eqnarray*}
+        x(n) &=& f(nT_S)\\
+        X(\omega_D) &=& F(2\pi \frac{\omega_A}{\omega_S})
+    \end{eqnarray*}
+    归一化情况下, 对于$n < 0$或者$n \ge L$, $x(n)$的取值有多种约定 \begin{enumerate}
+        \item $x(n) = x(n \mod L),\quad n < 0, n \ge L$
+        \item $x(n) = 0,\quad n < 0, n \ge L$
+        \item $x(n)$未定义$,\quad n < 0, n \ge L$
+    \end{enumerate}
+    不同的作者, 不同的上下文会选择不同的约定.
+
+\subsection{性质}
+    \begin{description}
+        \item[和CTFT关系] $\displaystyle \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S})$
+        \item[线性性] $\displaystyle \DTFT[\alpha x + \beta y] = \alpha \DTFT[x] + \beta \DTFT[y]$
+        \item[周期性] $\displaystyle X(\omega + 2\pi) = X(\omega)$
+        \item[反褶] $\displaystyle \DTFT[x(-n)] = X(-\omega)$
+        \item[共轭] $\displaystyle \DTFT[x^*(n)] = X^*(-\omega)$
+        \item[压扩] $\displaystyle \DTFT[x(n/a)] = X(a\omega), \quad a \in \Zset$
+        \item[时移] $\displaystyle \DTFT[x(n + n_0)] = X(\omega) e^{j \omega n_0}$
+        \item[频移] $\displaystyle \DTFT[x(n) e^{j \omega_0 n}] = X(\omega - \omega_0)$
+        \item[微分] $\displaystyle \DTFT[nx(n)] = j \D X(\omega)$
+        \item[卷积] $\displaystyle \DTFT[x * y] = X Y,\quad \DTFT[x y] = \frac{1}{2\pi} X * Y$\\
+            其中的卷积$X * Y$是周期函数的卷积$\int_{-pi}^{\pi} X(\vartheta) Y(\omega - \vartheta) \ud \vartheta$
+        \item[能量] $\displaystyle \ENERGY[x] = \frac{1}{2\pi} \ENERGY[DTFT[x]]$, 亦称Parseval定理
+    \end{description}
+
+\section{DFT}
+\subsection{定义}
+    设有序列长度为$L$的信号$x(0), x(1) \ldots x(L - 1)$,
+    $N$个谱值$\omega_0 = 0, \omega_1 = \frac{2\pi}{N} \ldots \omega_{N - 1} = \frac{(N-1) \cdot 2\pi}{N}$
+        均匀分布在Nyquist区间$[0, 2\pi]$上.\par
+    定义\[
+        X(k) = X(\omega_k) = \DFT[x(n)] = \sum_{n = 0}^{L - 1} x(n) W_N^{nk},\quad 0 \le k \le N - 1\]
+    为其N点DFT
+    上下文不清楚时, $\DFT$应加角标$N$. 其中$W_N$是$N$次单位根倒数$W_N = e^{- j \frac{2 \pi}{N}}$.\par
+    另外定义其逆变换IDFT为\[
+        \hat{x}(n) = \frac{1}{N} \sum_{k = 0}^{N - 1} X(k) W_N^{-nk},\quad 0 \le n  \le N -1 \]
+
+\subsection{补零和回绕} 对于$L \neq N$的$x(n)$, 可以通过补零和回绕, 得到一个$L = N$的$\hat{x}(n)$, 满足$\hat{X}(k) = X(k)$.
+    注意补零和回绕只会改变$L$.
+\paragraph{补零} 如果$L < N$, 考虑$\hat{x}(n) = \begin{cases} x(n) & 0 \le n \le L - 1\\ 0 & otherwise \end{cases}$
+\paragraph{回绕} 如果$L > N$, 考虑$\hat{x}(n) = \begin{cases} \sum_m x(n + mN) & 0 \le n \le N - 1 \\ 0 & otherwise \end{cases}$\par
+    由定义, 从IDFT只能得到回绕序列$\hat{x}$, 即DFT不满足唯一性 $\IDFT[\DFT [x]] \neq x$. 但是在$N = L$的情况下, DFT仍然满足唯一性.
+
+\subsection{性质}
+    基本与DTFT性质相同. 此外, DFT频谱是周期函数, 周期为$N$.
+    \begin{description}
+        \item[和CTFT的关系] $\DFT[x](k) = \CTFT[\mathbf{Trunc_L} f_{S}](\frac{k}{N} \omega_S)$
+        \item[线性性] $\displaystyle \DFT[\alpha x + \beta y] = \alpha \DFT[x] + \beta \DFT[y]$
+        \item[周期性] $\displaystyle X(k + N) = X(k)$
+        \item[对偶性] $\displaystyle \DFT[X(k)] = N x(-n)$
+        \item[反褶] $\displaystyle \DFT[x(-n)] = X(-k)$
+        \item[共轭] $\displaystyle \DFT[x^*(n)] = X^*(-k)$
+        \item[时移] $\displaystyle \DFT[x(n + m)] = X(k) W_N^{km}$
+        \item[频移] $\displaystyle \DFT[x(n) W_N^{nm}] = X(k + m)$
+        \item[卷积] $\displaystyle \DFT[x * y] = X Y,\quad \DFT[x y] = \frac{1}{N} X * Y$\\
+            其中的卷积$X * Y$是周期函数的卷积$\sum_{m = 0}^{N-1} X(m) Y(n-m)$
+        \item[能量] $\displaystyle \ENERGY[x] = \frac{1}{N} \ENERGY[\DFT[x]]$, 亦称Parseval定理
+    \end{description}
+
+\subsection{和其他傅里叶变换的关系} 参见下表.
+    \begin{table}[ht!]
+        \centering
+        \begin{tabular}{|c|c|c|}
+            \hline
+            变换 & 时域 & 频域\\ \hline
+            周期函数的FS & 连续, 周期$T_S$ & 离散, 非周期 \\ \hline
+            CTFT & 连续, 非周期 & 连续, 非周期\\ \hline
+            DTFT = CTFT冲激串抽样 & 离散, 非周期 & 连续, 周期$2\pi$\\\hline
+            DTFT时域加窗 & 离散, 定义域有限 & 连续, 周期$2\pi$\\\hline
+            DTFT时域加窗并且周期延拓 & 离散, 周期$L$ & 离散, 周期$???$ \\ \hline
+        \end{tabular}
+    \end{table}
+
+\subsection{FFT}
+    原理: 设$N = 2N'$, 令$y(n) = x(2n), z(n) = x(2n+1),\quad 0 \le n \le N' - 1$, 则有\[
+        \DFT_{N} [x] = \DFT_{N'} [y] + W_N^k \DFT_{N'} [z] \]
+
+\section{TODO}
+    %DTFT->CTFT: \[ X(\omega) = \CTFT[f_{S}](:w
+    对于$x(n), n < 0 or n \ge N$, 有几种看法:
+        周期延拓; 未定义; 0
+
+\end{document}
