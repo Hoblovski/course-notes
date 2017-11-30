@@ -1,3 +1,6 @@
+## vim swap files
+*.swp
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof

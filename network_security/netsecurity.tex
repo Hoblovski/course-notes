@@ -1,0 +1,207 @@
+    % 编译使用xelatex
+\documentclass{ctexart}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{subfigure} 
+
+\DeclareMathOperator{\Zset}{\mathbb{Z}}
+
+\title{计算机网络安全技术}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{基本密码学}
+\subsection{基本概念}
+\paragraph{传统加密和私钥加密} 传统加密包含代换, 置换密码及其组合, 重点依赖于算法的保密.
+    私钥加密亦称非对称加密, 算法和公约公开, 私钥保密.
+\paragraph{块加密和流加密} 输入是字符, 每次是处理一个字符还是处理一组字符.
+\paragraph{无条件安全和计算安全} 无条件安全即, 拥有无论多少密文对破译都没有帮助.
+    计算安全即, 破译代价大于加密数据本身价值, 或者破译时间长于加密数据有效时间.
+\paragraph{记号}
+    \begin{description}
+        \item[加密函数] $c = E_{K_E}(m),\quad m \in \mathcal{M}, c \in \mathcal{C}, K_E \in \mathcal{K}_E$
+        \item[解密函数] $m = D_{K_D}(c),\quad c \in \mathcal{C}, m \in \mathcal{M}, K_D \in \mathcal{K}_D$
+    \end{description}
+
+\subsection{代换密码}
+    如Caesar密码等单表代换密码, Playfair密码和Vigenere密码等多表代换密码.
+\paragraph{攻击} 拥有足够密文即可通过统计学分析破译.
+
+\subsection{置换密码}
+    $D(m) = \sigma m$, 要求$\mathcal{M} = \Sigma^L$, $\sigma$是$[0, L)$上的置换.
+\paragraph{攻击} 频率分析, 包括多元组频率分析.
+
+%   *** 不写S-DES了 ***
+%\subsection{DES算法}
+%    对称加密, $K_D = K_E$, 密钥通过秘密信道分配. 课程介绍DES的一个简化版本S-DES.
+%    是一个块加密算法, 输入输出是8位的, 密钥是10位的.
+%    分为两步: 计算次密钥$K_1$, $K_2$, 之后利用次密钥加密.\par
+%    具体过程略.
+%\paragraph{次密钥加密}
+%    有如下元素 \begin{enumerate}
+%        \item 文字$M = \langle M_0, \ldots M_9 \rangle$
+%        \item 密钥$K = \langle K_0, \ldots K_9 \rangle$
+%        \item $\sigma_i$是已知的8位置换
+%        \item $\sigma_{SW}$是已知的8位置换
+%        \item $f_{K_i}$是8位到8位的函数, 由次密钥$K_i$参数化
+%        \item $\sigma{LS, l}$是一个已知的10位置换
+%    \end{enumerate}
+%    则有 \begin{align*}
+%        D(M) &= \sigma_i^{-1} ( f_{K_2} ( \sigma_{SW} ( f_{K_1} ( \sigma_i (M) ) ) ) ) \\
+%        E(C) &= \sigma_i^{-1} ( f_{K_1} ( \sigma_{SW} ( f_{K_2} ( \sigma_i (C) ) ) ) )
+%    \end{align*}
+%    其中$f_{K_i}(X)$的定义如下.\par
+%    有如下元素 \begin{enumerate}
+%        \item $EP$是已知的4位到8位的函数
+%        \item $S0, S1$是已知的4位到2位的函数
+%        \item $\sigma_4$是4位置换
+%    \end{enumerate}
+%    则算法如下 (以下特别使用大段顺序) \begin{enumerate}
+%        \item $t = EP(X_{3 \ldots 0}) \oplus K_i$
+%        \item $h = X_{7 \ldots 4} \oplus \sigma_4(S0(t_{7 \ldots 4}) , S1(t_{3 \ldots 0}))$
+%        \item $f_{K_i}(X) = (h, X_{3 \ldots 0})$
+%    \end{enumerate}
+%\paragraph{计算$K_1, K_2$}
+%    有如下元素 \begin{enumerate}
+%    \end{enumerate}
+
+\subsection{Feistel密码结构}
+\paragraph{Feistel的密码观点}
+    \begin{enumerate}
+        \item 使用乘积密码
+        \item 交替使用代换和置换
+    \end{enumerate}
+\paragraph{Shannon的密码观点}
+    \begin{description}
+        \item[扩散] 密文不包含明文的统计信息, 每个明文字符影响多个密文字符
+        \item[混淆] 复杂的密文和密钥间的统计关系, 防止从密文推出密钥
+    \end{description}
+\paragraph{Feistel网络}
+    大致如图所示.
+    \begin{figure*}[ht]
+    \vskip 0.2in
+    \begin{center}
+    \centerline{\includegraphics[width=0.6\textwidth]{feistel-net}}
+    \caption{经典的Feistel网络结构}
+    \label{lenet-structure}
+    \end{center}
+    \vskip -0.2in
+    \end{figure*} 
+\paragraph{Feistel网络的元素}
+    \begin{description}
+        \item[分组长度和密钥长度] 越长越安全, 但是效率越低
+        \item[迭代层数] 越多越安全
+        \item[$K_i$的产生算法] 越复杂越安全
+        \item[$F$函数] 越复杂越安全
+    \end{description}
+
+\subsection{常见对称密码}
+\paragraph{DES算法}
+    DES是对称密钥算法, 基于Feistel网络结构.
+    密钥长度为56位, 块长度是64位, 迭代16轮.\par
+    和Feistel的区别是, 加密初始和末尾有一个置换.\par
+    已被破解.
+\paragraph{3-DES算法}
+    密钥长度加倍到112位, 并且加密函数变成了 \[
+        \mathbf{3-DES}(M) = \mathbf{DES}(\mathbf{DES}(\mathbf{DES}(M))) \]
+    很安全, 但是效率很低.
+\paragraph{Blowfish算法}
+    基于Feistel网络结构, 但是每轮中左右两半都进行计算.\par
+    未被破解.
+\paragraph{RC5算法}
+    仍然是多轮加密, 但是每轮结构更加复杂.
+\paragraph{AES算法}
+    AES不是Feistel结构, 每一轮处理整个输入 (而非分成2部分).
+
+\subsection{RSA算法}
+    一种块加密方法, 原文和密文都是$[0, N)$中的整数, 常常$N$是2的幂.\par
+\subsubsection{算法}
+\paragraph{前置}
+    \begin{enumerate}
+        \item 计算大素数 $p$, $q$.
+        \item 计算$N = pq$, 公开.
+        \item 寻找一个小整数$e,\;e < N,\,(e, N) = 1$
+        \item 求解$d e \equiv 1 \pmod{\varphi(N) = (p-1)(q-1)}$, 得到$d$
+        \item 公钥为$\langle e, N \rangle$, 私钥为$\langle d, N \rangle$
+    \end{enumerate}
+\paragraph{加密}
+    对于$m \in [0, N)$, 加密函数如下
+    \[ E(t) = m^e \bmod N \]
+\paragraph{解密}
+    对于$c \in [0, N)$, 加密函数如下
+    \[ D(c) = c^d \bmod N \]
+\paragraph{原理}
+    有效性由Euler定理保证 \[ a^{\varphi(n)} \equiv 1 \pmod{n},\quad \forall a\,:\,(a, n) = 1 \]
+    安全性由大数分解困难性保证.
+
+\subsubsection{攻击}
+    \begin{description}
+        \item[暴力破解] 需要枚举$t \in [0, N)$的空间
+        \item[数学攻击] 因子分解$N$
+        \item[计时攻击] 按照加密时间推测私钥.
+    \end{description}
+
+\subsection{Diffie-Hellman算法}
+    用于密钥交换, 而非加密解密, 即通过双方自身的私有密文得到一个共有密文.
+\subsubsection{算法}
+\paragraph{前置}
+    \begin{enumerate}
+        \item 寻找素数$p$, 以及$\Zset_p$的生成元$p$ i.e. $p$是原根, 均公开.
+    \end{enumerate}
+\paragraph{私有密文产生共有密文}
+    \begin{enumerate}
+        \item 双方由自己的私有密文$X_A,\, X_B$计算公开的$Y_A = a^{X_A} \bmod p,\, Y_B = a^{X_B} \bmod p$
+        \item 双方由公开的$Y_A, Y_B$计算得到共有密文$K = Y_B^{X_A} \bmod p = Y_A^{X_B} \bmod p = a^{X_A X_B} \bmod p$
+    \end{enumerate}
+\paragraph{原理}
+    安全性由离散对数困难性保证.
+
+\subsection{密钥分配}
+\subsubsection{传统对称密钥分配}
+\paragraph{可能的方法}
+    \begin{enumerate}
+        \item Alice选择密钥, 亲自交给Bob
+        \item 第三方Charlie选择密钥, 亲自交给Alice和Bob
+        \item Alice选择密钥, 用最近使用的密钥加密后发给Bob
+        \item 第三方Charlie选择密钥, 通过某个秘密渠道交给Alice和Bob
+    \end{enumerate}
+\paragraph{密钥分发中心}
+    基本假设: 每个人有一个仅他自己和KDC知道的主密钥. 此假设下, Alice和Bob得到一次性次密钥的方法为:
+    \begin{enumerate}
+        \item Alice向KDC请求次密钥
+        \item KDC发送给Alice消息, 消息用$PK_a$加密, 包含用次密钥$K_s$, 以及$PK_b$加密的$K_s$和$ID_a$
+        \item Alice将$PK_b$加密的消息发送给Bob
+    \end{enumerate}
+    为了效率和安全性, KDC通常也是层次性的, 而非一个巨大的中心KDC.
+\subsubsection{非对称公钥发布}
+\paragraph{公开发布} Alice向所有人广播自己的公钥. 问题是容易伪造广播消息.
+\paragraph{公开目录} 只有一个受信任的实体 (管理员) 能够广播公钥. 问题是如果受信任的实体被攻击, 公钥可以任意更改.
+\paragraph{公钥授权} 双方通讯之前先向管理员请求对方公钥, 管理员返回消息时用管理员私钥加密.
+\subsubsection{通过非对称公钥分配传统密钥}
+    非对称加密的问题是效率太低, 一般通过非对称加密传输传统密钥, 之后消息用传统加密方法求解.
+\paragraph{Merkel朴素方法} Alice给Bob请求共有密钥. Bob用Alice公钥加密某密文后传输给Alice, Alice之后使用自己的私钥解密得到共有密文.
+    问题: 中间人攻击, 考虑若Bob是假Bob.
+\paragraph{保密真实方法} \begin{enumerate}
+        \item Alice发送给Bob: $E_{K_{B, pub}}(ID_A, N_A)$, $N_A$是一个随机校验数
+        \item Bob得到$ID_A, N_A$, 发送给Alice: $E_{K_{A, pub}}(N_A, N_B)$
+        \item Alice得到$N_A', N_B$, 检查$N_A = N_A'$, 发送给B$E_{K_{B, pub}}(N_B)$
+        \item Bob得到$N_B'$, 检查$N_B = n_B'$
+    \end{enumerate}
+
+
+\section{计算机网络安全体系结构}
+\subsection{安全目标}
+\paragraph{保密性} 未授权的实体不能获得信息内容
+\paragraph{完整性} 信息不能被篡改, 或者能检测篡改
+\paragraph{可用性} 授权用户能够访问资源, 防止DoS攻击
+
+\subsection{OSI安全框架}
+
+\end{document}
+

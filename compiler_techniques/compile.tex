@@ -1,0 +1,62 @@
+% 编译使用xelatex
+\documentclass{ctexart}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+\title{编译原理}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{符号表}
+
+\section{基于语法的语义计算}
+\subsection{基于属性文法}
+\subsubsection{基本概念}
+\paragraph{定义}
+    在CFG基础上, 对每个$c \in V \cup T$关联属性, 记为$c.a, c.b$等.\par
+    每个产生式$A\to c_1 c_2 \ldots c_N,\; c_i \in V \cup T, c_0 = A$关联一个语法动作,
+    语法动作是若干个属性计算的序列, 每个属性计算形如$c_i.a = f(c_j.b \;|\; j \neq i, b\text{是}c_j\text{的属性}),\; 0 \le m \le N$.
+\paragraph{综合属性} $A \to c_0 \ldots c_N$关联的语法动作是$A.a = f(c_i.b)$则称$A.a$是综合属性.
+    综合属性代表语法树中自下而上传递的信息.
+\paragraph{继承属性} $A \to c_0 \ldots c_N$关联的语法动作是$c_i.a = f(c_j.b),c_i \neq A$则称$c_i.a$是继承属性.
+    继承属性代表语法树中自上而下传递的信息.
+\paragraph{S-属性文法} 只包含综合属性的属性文法称S-属性文法.
+\paragraph{L-属性文法} 允许综合属性和继承属性, 但是语法动作要求有$c_i.a = f(c_{\neq i}.b) =f(c_{< i}.b)$.
+    即产生式中某符号的属性不能依赖产生式中位于它之后的符号的属性.
+
+\subsubsection{两趟方法的属性计算}
+    生成语法树之后, 计算属性的大致步骤如下
+    \begin{enumerate}
+        \item 分析语法书中结点属性 (即符号属性) 的依赖关系
+        \item 如果依赖关系不存在环, 则按照依赖关系的拓扑顺序计算属性值.\\
+        如果依赖关系有环, 认为属性语法不是良定义的, 不予处理.\par
+    \end{enumerate}
+    两趟方法通用, 但是效率开销较大.
+
+\subsubsection{一趟方法的属性计算}
+\paragraph{S-属性文法} 采用自底向上文法分析 (如LR), 每次按$A \to c_1 c_2 \ldots c_N$进行规约时, 一定有$c_1, c_2 \ldots c_N$是栈顶$N$个元素. 
+    因此将元素属性一并存放在栈中, 每次规约时直接通过栈顶元素$N$个元素$c_1, c_2\ldots c_N$的属性计算$A.a$即可.
+\paragraph{L-属性文法} \label{onepass-l-attr-grammar} 采用自顶向下文法分析 (如LL(1)递归下降),
+    将继承属性作为参数传入子符号的分析过程, 并且要求子符号分析过程返回子符号的综合属性.\par
+    即将$\mathbf{Parse}(A) \to \mathtt{void}$改为$\mathbf{Parse}(A, A.a_I) \to A.a_S$, 其中$A.a_I$表示$A$的继承属性, $A.a_S$表示$A$的综合属性.
+
+\subsection{基于翻译模式}
+\subsubsection{基本概念}
+\paragraph{翻译模式} 类似属性文法, 但是允许语法动作出现在产生式中任何地方, 表示匹配到该处时即刻执行该语法动作.
+\paragraph{消除左递归} 讨论消除左递归时, 保持翻译动作等价. 以直接左递归为例\begin{align*}
+        A & \to A_1 \alpha \; \{A.a = f(A_1.a, \alpha.a)\}\\
+        A & \to \beta  \; \{A.a = g(\beta.a)\}
+    \end{align*}
+    % TODO
+    按照消除直接左递归的方法变换之后, 变为 \begin{align*}
+        A & \to \beta \; \{ R.i = g(\beta.a) \} \; R \; \{A.a = f(R.s)\}\\
+        R & \to \epsilon  \qquad \{R.a = g(\beta.a)\}\\
+        R & \to \alpha \{\} R_1  \qquad \{\}
+    \end{align*}
+\subsubsection{自上而下计算} 类似\ref{onepass-l-attr-grammar}, 但是计算属性在$\mathbf{parse(A)}$过程中进行.
+\end{document}
