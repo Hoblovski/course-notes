@@ -5,7 +5,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage{subfigure} 
+\usepackage{subfigure}
 
 \DeclareMathOperator{\Zset}{\mathbb{Z}}
 
@@ -92,7 +92,7 @@
     \label{lenet-structure}
     \end{center}
     \vskip -0.2in
-    \end{figure*} 
+    \end{figure*}
 \paragraph{Feistel网络的元素}
     \begin{description}
         \item[分组长度和密钥长度] 越长越安全, 但是效率越低
@@ -197,11 +197,121 @@
 
 \section{计算机网络安全体系结构}
 \subsection{安全目标}
-\paragraph{保密性} 未授权的实体不能获得信息内容
-\paragraph{完整性} 信息不能被篡改, 或者能检测篡改
-\paragraph{可用性} 授权用户能够访问资源, 防止DoS攻击
+    \begin{description}
+        \item[保密性] 未授权的实体不能获得信息内容
+        \item[完整性] 信息不能被篡改, 或者能检测篡改
+        \item[可用性] 授权用户能够访问资源, 防止DoS攻击
+    \end{description}
 
-\subsection{OSI安全框架}
+\section{消息认证}
+\subsection{攻击类型}
+    \begin{description}
+        \item[泄密] 保密性范畴.
+        \item[传输分析] 保密性范畴.
+        \item[伪装] 消息认证.
+        \item[内容修改] 消息认证.
+        \item[抵赖] 数字签名, 以及协议设计.
+    \end{description}
+\subsection{消息认证基本概念}
+\subsubsection{消息认证} 确认发送方是真实的, 确认消息违背篡改.
+\subsubsection{基本框架} 发送方产生一个认证符; 接收方产生一个认证符, 并且检查双方认证符是否匹配.
+
+\subsection{产生认证符}
+\subsubsection{消息加密作为认证符} 对称加密中可以采用这种方式, 但是不能验证消息是否来自正确的发送方.
+    解决办法是, 附带原文 (而不是密文) 的校验符号.
+    在非对称加密中, 私钥加密只能认证不能加密, 公钥加密则不能认证.
+    解决方法是, 接收方公钥发送方私钥两次加密.
+\subsubsection{消息认证码MAC}
+    通过消息和密钥, 利用公开的算法计算认证 $= C_K(M)$, $K$是共有密钥, $M$是消息.\par
+    不能完成数字签名: 接收方也有$K$, 因此可以伪造消息.\par
+    实践将一般先加密, 再使用MAC.
+\subsubsection{消息的哈希}
+    通过消息, 利用公开的算法计算认证符$= \mathbf{Hash}(M)$, $M$是消息. 亦称消息摘要. 
+    不同情境下, 其可以提供不同效果, 如\begin{enumerate}
+        \item 对称加密中, 可以加密消息和哈希码, 可以完成加密和认证.
+        \item 对称加密中, 可以只加密哈希码, 可以完成认证.
+        \item 非对称加密中, 用发送方的私钥加密哈希码, 可以完成认证和数字签名.
+        \item 非对称加密中, 用发送方的私钥加密消息和哈希码, 可以完成加密, 认证和数字签名.
+    \end{enumerate}
+\subsection{哈希函数}
+\subsubsection{哈希函数的理论要求}
+    要求哈希函数$h = H(M)$有如下性质 \begin{description}
+        \item[单向性] 对于$h$, 难以寻找$M$, 满足$H(M) = h$
+        \item[弱抗碰撞] 对于$M$, 难以寻找$M'$, 满足$H(M) = H(M')$
+        \item[强抗碰撞] $\forall M$, 难以寻找$M'$, 满足$H(M) = H(M')$
+    \end{description}
+\subsubsection{安全哈希函数的Merkel结构} 
+    参见图 \ref{merkel-hash}.
+    \begin{figure*}[ht]
+    \vskip 0.2in
+    \begin{center}
+    \centerline{\includegraphics[width=0.8\textwidth]{merkel-hash}}
+    \caption{Merkel哈希结构}
+    \label{merkel-hash}
+    \end{center}
+    \vskip -0.2in
+    \end{figure*}
+\subsubsection{常用哈希举例}  MD5, SHA-1, SHA-2等
+
+\subsection{数字签名DSS算法}
+\paragraph{应用场景} 来自消息发送双方的攻击, 如接收方伪造发送, 发送方抵赖发送.
+\paragraph{分类} 直接数字签名 (仅通信双方), 仲裁数字签名 (受信任的实体).
+\paragraph{前置} \begin{description}
+    \item[全局公钥] $p$是素数\\ $q$是素数且$q \mid p -1$\\
+        $g = h^{(p-1) / q} \bmod p$
+    \item[用户私钥] $x$, 满足$x < q-1$
+    \item[用户公钥] $y = g^x \bmod p$
+    \item[随机数] $k < q$, 每次认证都应产生一个新的$k$, 且$k$保密
+    \end{description}
+\paragraph{DSS算法签名} 签名用一组数$(r, s)$代表, 计算过程如下方程, 哈希函数$\mathbf{H}$一般取SHA-1
+    \begin{align*}
+        r &= g^k \bmod p \bmod q\\
+        s &= (k^{-1} (\mathbf{H}(M) + xr)) \bmod q
+    \end{align*}验证要求 \begin{equation*}
+        g^{(s^{-1} M) \bmod q} y^{(s^{-1} r) \bmod q} = r
+    \end{equation*}
+
+\section{访问控制}
+\subsection{基本概念}
+\paragraph{主体} 提出访问资源请求的人/实体.
+\paragraph{客体} 含有被访问资源的实体.
+\paragraph{访问} 对资源的使用行为, 有时还需包括主客体.
+\paragraph{访问控制矩阵} 定义不同主体对于不同客体可以执行的操作, 如 \[ \begin{array}{|c|c|c|}
+        \hline
+        & \multicolumn{2}{c}{1} \\ 
+        \hline
+        3 & 4 & 5 \\
+        \hline
+    \end{array} \]
+
+\paragraph{3A机制}  认证, 授权, 审计
+
+\subsection{访问控制模型}
+\subsubsection{自主性访问控制} 每个客体有一个管理者, 管理者将访问权限授权给其他人. 可以看成以主体为核心.
+\paragraph{性质} 易用方便灵活. 但是不能控制信息的流动, i.e. 其他人取得资源后可以自由分发.
+\subsubsection{强制性访问控制} 每个主体和客体有固定的安全级别, 由系统管理员决定. 可以看成以客体为核心.
+\paragraph{No Read Up} 主体只能读取安全级别更低的客体.
+\paragraph{No Write Down} 主题只能写入安全级别更高的客体.
+\subsubsection{基于角色的访问控制} 主体(用户)属于用户组(角色). 每个角色(而非主体)对于不同的客体有不同访问权限. 
+    可以看成以访问为核心.
+
+\subsection{防火墙} 在两个不同网络间建立访问控制的软硬件.
+\subsubsection{设计目标} 监控两个网络间所有通信流量, 只有授权的流量才允许通过.
+\subsubsection{常用技术} 基于控制, 有\begin{description}
+        \item[服务控制] 基于服务端口号 / IP地址
+        \item[方向控制] 内到外 / 外到内
+        \item[用户控制] 基于用户的身份
+        \item[行为控制] 基于用户的行为进行控制
+    \end{description}基于分层, 有\begin{description}
+        \item[网络层] 包过滤技术.\\ 根据定义好的过滤规则审查每个数据包. 性能较高, 但控制能力不强.
+        \item[网络层] 地址转换.\\ 完成转发和地址转换. 不提供额外的安全性，但是可以隐蔽内部网络，节省地址空间
+        \item[传输层] 电路层网关.\\ 检查包所属的会话. 不支持UDP, 性能开销较大.
+        \item[应用层] 应用层代理.\\ 功能强大, 但是性能较低, 并且实现麻烦.
+    \end{description}
+\subsubsection{访问控制列表} 一组预先定义好的规则. 其根据包头, 指定包是否被拦截.
+\paragraph{标准和拓展} 标准ACL只检查 Frame 中源IP地址.
+    拓展ACL还支持端口, 目标IP, 协议, 检查 Frame 和 Packet.\par
+    路由过程中, 路由前后分别有入口/出口端ACL. 入口端ACL在查路由表前检查, 出口端ACL在转发前检查.
 
 \end{document}
 
