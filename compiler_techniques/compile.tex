@@ -12,21 +12,138 @@
 
 \tableofcontents
 
+\section{词法分析}
+\paragraph{目的}
+    将字符流转为符号流.
+\paragraph{符号定义} \begin{itemize}
+        \item 巴克斯范式
+        \item 正则表达式
+        \item 混合 (如lex的实现)
+    \end{itemize}
+\paragraph{解析方式}
+    基本通过正则表达式语言和有限状态自动机的等价原理, 将符号定义转为正则表达式,
+    之后变为有限状态自动机, $\epsilon$-NFA到NFA到DFA.\par
+    通常采取最长匹配方法, 即允许自动机向前偷看一个符号.
+    如果当前满足一个符号, 但是按照偷看符号转移后不满足任何符号, 则返回当前匹配的符号.
+
+\section{语法分析}
+\paragraph{目的}
+    将符号串解析为符合程序语法的生成树
+\paragraph{语法描述}
+    通过上下文无关语言描述语法. 后记此语法为$G[S]$
+\paragraph{惯例} \begin{itemize}
+        \item 终结符串最后还认为有一个终止符号$\$$ (课程中是$\#$)
+        \item $\alpha, \beta \ldots \in (V\cup T)^*$
+        \item $w \in T^*$
+        \item $a, b \ldots \in T$
+        \item $A, B \ldots \in V$
+        \item $X, Y \ldots \in V\cup T$
+    \end{itemize}
+\subsection{自顶向下分析}
+    从起始符号$S$开始, 不断利用产生式展开非终结符, 直到原串.\par
+\paragraph{不确定性} 这样的方法有两个不确定性 \begin{enumerate}
+        \item 选择哪一个非终结符展开
+        \item 选择哪一个产生式
+    \end{enumerate}\par
+    第一个问题很容易, 每次都选择当前符号串$w A \alpha$的最左边的非终结符$A$展开.
+\subsubsection{产生式的选择}
+\paragraph{向前查看} 对于$wA\alpha$, 选择产生式如果只考虑$A$, 则没有任何线索, 能够确定选择哪一个产生式.\par
+    设$\alpha = X_1 X_2 \ldots X_l$.
+    由上, 选择产生式时,
+    不仅考虑$A$, 还考虑$X_1, X_2 \ldots X_k,\; (k < l)$,
+    选择的产生式$p$是它们的函数$p = f(A, X_1 \ldots X_k)$.\par
+    称这种方法为LL(k)方法. 下述LL(1)方法.
+\paragraph{First函数} First是符号串的函数, 定义如下\[
+    First(\alpha) = \{a \in T \;|\; \exists \beta\,:\,\alpha \Rightarrow^* a\beta\}\]
+    特别地, 如果$\alpha \Rightarrow^* \epsilon$, 则说$\epsilon \in First(\alpha)$.
+    意义是符号串对应的终结符串的首个终结符的取值集合.
+\paragraph{Follow函数} Follow是非终结符的函数, 定义如下\[
+    Follow(A) = \{a \in T \;|\; \exists \alpha, \beta \,:\, S\$ \Rightarrow^* \alpha A \beta\$, a \in First(\beta\$)\}
+    \]
+    意思是$G[S]$句型中中, 可能跟在$A$的后面的终结符所有取值.
+\paragraph{选择产生式} 希望展开$A$, 并且$\text{lookahead} = a$, 则选择的产生式$A \to \beta$应当满足\[
+    a \in PS(A \to \beta) = \begin{cases}
+        First(\beta) & \epsilon \not\in First(\beta)\\
+        First(\beta) \cup Follow(A) - \{\epsilon\} & \epsilon \in First(\beta)
+    \end{cases} \]
+    如果$\forall A \in V, a \in T$有$\Big|\{A \to \beta \;|\; a \in PS(A \to \beta)\}\Big| = 1$ (即产生式的选择唯一),
+    则称$G[S]$是LL(1)文法, 可以按照上述方法解析.
+\subsubsection{First和Follow的计算}
+\paragraph{First的计算} 考虑计算$First(\alpha)$, 设$\alpha = X_1 X_2 \ldots X_k$.\par
+    若$X_1\ldots X_{l-1}$可空, $X_l$不可空 (显然终结符不可空), 有\[
+        First(\alpha) = \cup_{1 \le i \le l} First(X_i) - \{\epsilon\}\]\par
+    若$X_1 \ldots X_k$都可空, 则\[
+        First(\alpha) = \cup_{1 \le i \le k} First(X_i)\]\par
+    非终结符$First(A) = \cup_{\beta\;:\; A \to \beta} First(\beta)$.\par
+    通过迭代即可求解如上的集合约束问题.
+\paragraph{Follow的计算} 考虑计算$Follow(A)$. 首先寻找所有形如$B \to \alpha A \beta$的产生式.\par
+    如果$\epsilon \not\in First(\beta)$, 则$Follow(A) \supseteq First(\beta)$.\par
+    如果$\epsilon \in First(\beta)$, 则$Follow(A) \supseteq First(\beta) \cup Follow(B) - \{\epsilon\}$.\par
+    通过迭代求解如上的集合约束问题, 要求$Follow(A)$取最小 (即满足上述条件的最小集合).
+\subsubsection{递归下降程序} 每个非终结符的解析都是一个函数.
+    其中根据lookahead选择产生式, 匹配非终结符就调用对应函数, 匹配非终结符就直接\texttt{match\_token}.\par
+    常见的递归下降程序如\begin{verbatim}
+    void parse_B()
+    {
+        switch (lookahead) {
+            case c: 
+                // B -> c A d
+                match_token(c); 
+                parse_A()
+                match_token(d);
+                break;
+            case b: 
+                // B -> epsilon
+                break;
+            default:
+                // no production matches here
+                report error;
+        }
+    }\end{verbatim}
+\subsubsection{表驱动程序}
+    记$M[A, a]$表示希望展开$A$, $\text{lookahead} = a$时, 按照上述方法得到的可用产生式.\par
+    表驱动利用一个栈, 最初栈中只有$S\$$, $S$在栈顶. 之后重复检查栈顶$X$和输入$\text{lookahead} = a$ \begin{itemize}
+        \item $X = \$$, 分析完成
+        \item $X \in T$, 此时应有$X$等于$a$. 符合则消耗$a$, 否则报错
+        \item $X \in V$, 设$M[X, a] = X \to \alpha$, 则$X$出栈, $\alpha$从右到左入栈
+    \end{itemize}
+\subsubsection{语法变换}
+    LL(1)语言一般要求不包含左递归, 不包含公共左因子.
+\paragraph{去除直接左递归} 原为\begin{align*}
+        A & \to A \alpha_1 \,|\, A \alpha_2 \,|\, \ldots \,|\, \beta_1 \,|\, \beta_2 \,|\, \ldots
+    \end{align*}改写为\begin{align*}
+        A &\to \beta_1 B \,|\, \beta_2 B \,|\, \ldots \\
+        B &\to \alpha_1 B \,|\, \alpha_2 B \,|\, \ldots \,|\, \epsilon
+    \end{align*}
+\paragraph{去除间接左递归} 要求原文法无环$A \not\Rightarrow^+ A$, 无$\epsilon$产生式$A \to \epsilon$. 按照如下算法\begin{enumerate}
+        \item 将非终结符编号为$A_1, A_2 \ldots A_n$
+        \item \begin{verbatim}for i = 1 to n
+    for j = 1 to i-1
+        对于所有 A_i -> A_j \alpha, 代替以 A_i -> \beta \alpha, 其中 A_j -> \beta
+    消除A_i的直接递归
+\end{verbatim}
+    \end{enumerate}
+\paragraph{消除左公因子} 直接将左公因子作为新的符号即可.
+
+
 \section{符号表}
+\paragraph{基本概念}
+    不同的作用域有自己的符号表, 某处可见的符号是其自身包含所有父亲作用域 (亦称开作用域) 符号表的并.
+\paragraph{实现} 可以实现为全局的一个符号表, 也可以实现成各个作用域符号表的栈.
 
 \section{基于语法的语义计算}
 \subsection{基于属性文法}
 \subsubsection{基本概念}
 \paragraph{定义}
-    在CFG基础上, 对每个$c \in V \cup T$关联属性, 记为$c.a, c.b$等.\par
-    每个产生式$A\to c_1 c_2 \ldots c_N,\; c_i \in V \cup T, c_0 = A$关联一个语法动作,
-    语法动作是若干个属性计算的序列, 每个属性计算形如$c_i.a = f(c_j.b \;|\; j \neq i, b\text{是}c_j\text{的属性}),\; 0 \le m \le N$.
-\paragraph{综合属性} $A \to c_0 \ldots c_N$关联的语法动作是$A.a = f(c_i.b)$则称$A.a$是综合属性.
+    在CFG基础上, 对每个$X \in V \cup T$关联属性, 记为$X.a, X.b$等.\par
+    每个产生式$A\to X_1 X_2 \ldots X_N,\; X_i \in V \cup T, X_0 = A$关联一个语法动作,
+    语法动作是若干个属性计算的序列, 每个属性计算形如$X_i.a = f(X_j.b \;|\; j \neq i, b\text{是}X_j\text{的属性}),\; 0 \le m \le N$.
+\paragraph{综合属性} $A \to X_0 \ldots X_N$关联的语法动作是$A.a = f(X_i.b)$则称$A.a$是综合属性.
     综合属性代表语法树中自下而上传递的信息.
-\paragraph{继承属性} $A \to c_0 \ldots c_N$关联的语法动作是$c_i.a = f(c_j.b),c_i \neq A$则称$c_i.a$是继承属性.
+\paragraph{继承属性} $A \to X_0 \ldots X_N$关联的语法动作是$X_i.a = f(X_j.b),X_i \neq A$则称$X_i.a$是继承属性.
     继承属性代表语法树中自上而下传递的信息.
 \paragraph{S-属性文法} 只包含综合属性的属性文法称S-属性文法.
-\paragraph{L-属性文法} 允许综合属性和继承属性, 但是语法动作要求有$c_i.a = f(c_{\neq i}.b) =f(c_{< i}.b)$.
+\paragraph{L-属性文法} 允许综合属性和继承属性, 但是语法动作要求有$X_i.a = f(X_{\neq i}.b) =f(X_{< i}.b)$.
     即产生式中某符号的属性不能依赖产生式中位于它之后的符号的属性.
 
 \subsubsection{两趟方法的属性计算}
@@ -39,8 +156,8 @@
     两趟方法通用, 但是效率开销较大.
 
 \subsubsection{一趟方法的属性计算}
-\paragraph{S-属性文法} 采用自底向上文法分析 (如LR), 每次按$A \to c_1 c_2 \ldots c_N$进行规约时, 一定有$c_1, c_2 \ldots c_N$是栈顶$N$个元素. 
-    因此将元素属性一并存放在栈中, 每次规约时直接通过栈顶元素$N$个元素$c_1, c_2\ldots c_N$的属性计算$A.a$即可.
+\paragraph{S-属性文法} 采用自底向上文法分析 (如LR), 每次按$A \to X_1 X_2 \ldots X_N$进行规约时, 一定有$X_1, X_2 \ldots X_N$是栈顶$N$个元素.
+    因此将元素属性一并存放在栈中, 每次规约时直接通过栈顶元素$N$个元素$X_1, X_2\ldots X_N$的属性计算$A.a$即可.
 \paragraph{L-属性文法} \label{onepass-l-attr-grammar} 采用自顶向下文法分析 (如LL(1)递归下降),
     将继承属性作为参数传入子符号的分析过程, 并且要求子符号分析过程返回子符号的综合属性.\par
     即将$\mathbf{Parse}(A) \to \mathtt{void}$改为$\mathbf{Parse}(A, A.a_I) \to A.a_S$, 其中$A.a_I$表示$A$的继承属性, $A.a_S$表示$A$的综合属性.
@@ -55,8 +172,82 @@
     % TODO
     按照消除直接左递归的方法变换之后, 变为 \begin{align*}
         A & \to \beta \; \{ R.i = g(\beta.a) \} \; R \; \{A.a = f(R.s)\}\\
-        R & \to \epsilon  \qquad \{R.a = g(\beta.a)\}\\
-        R & \to \alpha \{\} R_1  \qquad \{\}
+        R & \to \epsilon  \; \{R.a = g(\beta.a)\}\\
+        R & \to \alpha \; \{\,\}\; R_1  \; \{\}
     \end{align*}
 \subsubsection{自上而下计算} 类似\ref{onepass-l-attr-grammar}, 但是计算属性在$\mathbf{parse(A)}$过程中进行.
+
+\pagebreak
+\section{Bottom-up parsing}
+\paragraph{其他} 所有LR分析, driver是一样的, 只有parser table是不一样的.
+\paragraph{item} 定义为加点的产生式.
+\paragraph{closure} $I$: item集. 定义$closure(I)$等于$[A \to \alpha . B \beta] \;R\; [B \to .\gamma],\quad B \to \gamma$的关系闭包.
+\paragraph{augmented grammar} 加入产生式 $S' \to S$, $S' \to .S$为状态机的初状态.
+\paragraph{goto} $I \text{ is closure},\;X \in V \cup T$\[
+    goto(I, X) = closure(\{[A \to \alpha X .\beta \;|\; [A \to \alpha . X \beta] \in I\})\]
+\subsection{LR(0)}
+    SLR自动机: 状态为$\{ clusure(I) \}$, 转移函数为$goto(I, X)$.
+    其他的parsing method在SLR上面加入了前看信息.\par
+    之后记$I$就是$closure$了.
+\paragraph{action} \begin{align*}action(I, a)&\\
+    &= \text{shift}\; j \qquad \{J\} = goto(I, a)\\
+    &| \text{reduce}\; A\to\beta \qquad [A \to \beta.] \in I\\
+    &| \text{accept}\\
+    &| \text{error}\end{align*}
+\paragraph{建立LR表goto, action} closure域, goto直接由定义计算即可.\par
+    对于action, 有如下规则\begin{enumerate}
+        \item $[A \to \alpha .a \beta] \in I,\quad action(I, a) = \text{shift}\; goto(I, a)$
+        \item $[A \to \alpha.] \in I$则$\forall a \;:\; action(I, a) = \text{reduce}\;A\to\alpha$
+        \item $[S' \to S.] \in I$则$action(I, \$) = \text{success}$
+        \item 以上规则没有指定的$action(I, a) = \text{error}$
+        \item 以上规则冲突时, 则称语法不是SLR(1)的
+    \end{enumerate}
+
+\subsection{SLR(1)}
+    基本同LR(0)
+\paragraph{action}
+    $action(I, a) = \text{reduce} A \to \alpha \qquad A \to \alpha. \in I,\; a \in Follow(A)$
+
+\subsection{LR(1)}
+\paragraph{item} 之前是一遇到可规约的$A \to \alpha.$就规约 (规则2.),
+    但是不一定是这样 (前看$\alpha$之后一个符号得到的信息被忽略了).\par
+    item的表示是$[A \to \alpha . \beta, a],\quad a \in T$. 如果$\beta \neq \epsilon$, 那么一切和SLR一样.\par
+    如果$\beta = \epsilon$, 那么当且仅当$a \in Follow(A)$时, 才进行规约.
+\paragraph{closure} $[A \to \alpha . B \beta, a]  \; \mathbf{R} \;  [B \to .\gamma, b] \quad b \in \mathbf{FIRST}(\beta a)$
+    如上关系的闭包.
+\paragraph{构造goto} $goto(I, X) = closure([A \to \alpha X. \beta] \,|\, [A \to \alpha . X \beta] \in I)$
+\paragraph{构造item集} 从$closure([S' \to .S, \$])$按照$goto$拓展得图.
+\paragraph{初态} $I_0 = closure(\{[S' \to .S,\, \$]\})$
+\paragraph{action} \begin{align*}
+    action(I, a)&\\
+        &= \text{shift}\; goto(I, a)    \qquad [A \to \alpha .a \beta,\, b] \in I\\
+        &| \text{reduce}\; A\to\alpha    \qquad [A \to \alpha.,\, a] \in I,\, A\to\alpha \neq S'\to S\\
+        &| \text{accept}                \qquad [S' \to S., \$] \in I\\
+        &| \text{error}                 \qquad \text{otherwise}
+    \end{align*}
+
+\subsection{LALR(1)}
+    和LR(0)一样状态数目.
+    其余方法和LR(1)相同.
+\paragraph{合并LR(1)同芯状态} 同芯: $[A\to\alpha.\beta, a]$中$A\to\alpha.\beta$相同
+
+
+
+\pagebreak
+\section{Intermediate Code Generation}
+\paragraph{DAG} expression DAG可以用来代替expression tree
+\subsection{TAC} Three Address Code 形如 \\
+    A = B op C\\
+    A = op B\\
+    A = B\\
+    goto lbl\\
+    if x goto lbl\\
+    ifnot x goto lbl\\
+    if x relop y goto lbl\\
+    param x1, param x2...param xn, call p, n\\
+\paragraph{addess} 可以是name, constant, 或者编译器生成的中间变量
+
+%If the attributes are all synthesized, and the actions occur at the ends of the
+%productions, then we can compute the attributes for the head when we reduce
+%the body to the head
 \end{document}

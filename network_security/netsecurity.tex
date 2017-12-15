@@ -313,5 +313,64 @@
     拓展ACL还支持端口, 目标IP, 协议, 检查 Frame 和 Packet.\par
     路由过程中, 路由前后分别有入口/出口端ACL. 入口端ACL在查路由表前检查, 出口端ACL在转发前检查.
 
+\subsection{VLAN虚拟局域网}
+\paragraph{交换机学习} 交换机初始时, MAC-端口表是空的.
+    根据后向学习算法, 
+    任何端口i进入一个包 (MAC地址为p), 那么以后所有到p的包都应被发到i端口.
+    如果这个包的MAC对应端口未知, 那么洪泛到所有端口.\par
+    问题: 广播灾难.\par
+    解决: 中间价路由器, 路由器通过IP而非MAC.\par
+\paragraph{基本概念} VLAN类似一个独立的网桥, 但是可能一个VLAN跨越不同的交换机, 同一个交换机有不同的VLAN.
+\paragraph{类型} 如 \begin{description} 
+        \item[基于物理接口] 按照交换机的接口分配.\\ 配置简单, 但是不灵活.
+        \item[基于MAC地址] 局域网中每个MAC地址有对应的VLAN分组.
+        \item[基于协议] 根据网络层协议分划VLAN.
+    \end{description}
+\paragraph{优点} \begin{itemize}
+        \item 解决人员维护性
+        \item 控制广播流量, 防止洪泛灾难
+        \item 增强安全性
+    \end{itemize}
+\paragraph{缺点} 缺乏标准
+
+
+\pagebreak \appendix
+ 
+\section{实验 IDS}
+\subsection{检测技术}
+\subsubsection{基于异常}
+    学习正常流量的特征, 只允许满足特征的包.\par
+    较高误报率, 较低漏报率.
+\subsubsection{基于特征}
+    学习异常流量的特征, 不允许满足特征的包.\par
+    较高漏报率, 较低误报率.
+\subsection{常见攻击}
+\subsubsection{DoS/DDoS攻击}
+    不停访问目标资源, 使得目标资源耗尽.
+\subsubsection{DNS放大攻击}
+    DNS特点: 回复包比请求包大很多. 方法是伪造发送者, 类似DoS.
+\subsection{实验命令}
+\paragraph{离线模式}
+\begin{verbatim} suricate -c CONFIG_PATH -l LOG_PATH -r DETECT_OUTPUT_PATH \end{verbatim}
+
+%\section{实验 Packet Tracer}
+%\subsection{设备使用}
+%\subsubsection{交换机} 位于链路层. 为端到端通信提供不被干扰的链路.
+%\subsubsection{路由器} 位于网路层. cisco IOS 四种模式包含.
+%    usr mode        router>
+%    privlge mode    router#
+%    conf mode       router(config)#
+%    spec conf mode
+%     enable : usr -> privlge
+%     disable: privlge -> usr
+%     configure terminal:     privlge -> conf
+%   routing tbl: <dest, mask, nexthop>
+%   interface connections:
+%       PC: 1 2 send; 3 6 recv;
+%       switch: 1 2 recv; 3 6 send;
+%       straight-through:   PC - switch
+%       cross-over:         PC - PC, switch - switch
+%   switch 2960: both straight-through / cross-over are ok to use
+
 \end{document}
 
