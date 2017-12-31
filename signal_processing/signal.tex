@@ -5,6 +5,9 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{tabularx}
+\usepackage[math]{cellspace}
+\setlength\cellspacetoplimit{6pt}
+\setlength\cellspacebottomlimit{6pt}
 
 \title{信号处理原理}
 
@@ -14,14 +17,17 @@
 \DeclareMathOperator{\IDTFT}{\mathbf{IDTFT}}
 \DeclareMathOperator{\DFT}{\mathbf{DFT}}
 \DeclareMathOperator{\IDFT}{\mathbf{IDFT}}
+\DeclareMathOperator{\ZT}{\mathbf{ZT}}
 \DeclareMathOperator{\ENERGY}{\mathbf{ENERGY}}
 \DeclareMathOperator{\POWER}{\mathbf{POWER}}
 \DeclareMathOperator{\D}{\mathbf{D}}
 \DeclareMathOperator{\ud}{\mathrm{d}}
 \DeclareMathOperator{\Rset}{\mathbb{R}}
+\DeclareMathOperator{\Cset}{\mathbb{C}}
 \DeclareMathOperator{\Zset}{\mathbb{Z}}
 \DeclareMathOperator{\sgn}{\mathrm{sgn}}
 \DeclareMathOperator{\Sa}{\mathrm{Sa}}
+\DeclareMathOperator{\Res}{\mathrm{Res}}
 
 % for simulating booktabs rules; so they work with vertical lines
 \newlength{\Oldarrayrulewidth}
@@ -116,7 +122,6 @@
         \item[卷积] $\displaystyle \CTFT[f g] = \frac{1}{2\pi} \CTFT[f] * \CTFT[g],\qquad \CTFT[f * g] = \CTFT[f] \CTFT[g]$
     \end{description}
 
-\subsection{常见信号的傅里叶变换}
     \begin{table}[ht!]
         \centering
         \begin{tabular}{|c|c|}
@@ -301,7 +306,147 @@
 
 % \section{TODO}
     %DTFT->CTFT: \[ X(\omega) = \CTFT[f_{S}](:w
+    
+\section{系统}
+\subsection{基本概念}
+\paragraph{理解}
+    一般的看法是, 信号进入一个系统, 然后出来后变成另一个信号. 即, 系统对信号做了一个变换.
+    因此, 系统可以看作一个信号域上的算子.\par
+    以$\mathcal{F}, \mathcal{G}\ldots$记系统.\par
+    滤波器也是系统, 但是着重强调其对于系统在频域上的变换.
+\paragraph{课程限制}
+    课程中只考虑离散时间系统, 信号的时域是离散的.
+    即信号域是$x(n) \in \Cset,\; x\in \Zset$, 输入输出信号都是这种形式.
+    滤波器也是数字滤波器, 频域只考虑一个Nyquist区间$[0, 2\pi)$或者$[-\pi, \pi)$.\par
+    并且都满足线性性, 时不变性, 因果性.\par
+    另外假设输入$x$满足因果性, 即$x(n) = 0, \;\forall\, n < 0$.
+\paragraph{其他概念}
+    \begin{description}
+        \item[线性性] $\mathcal{F}[\alpha x + \beta y] = \alpha \mathcal{F}[x] + \beta \mathcal{F}[y]$
+        \item[时不变性] $\mathcal{F}[x(n + m)](k) = \mathcal{F}[x(n)](k + m)$
+        \item[因果性] $y = \mathcal{F}[x]$, 则$y(n)$是$\{ x(k) \;|\; k \le n \}$的函数
+        \item[稳定性] $y = \mathcal{F}[x]$, 若$x$是有界的, 则$y$是有界的
+    \end{description}
 
+\subsection{时域描述}
+\subsubsection{差分方程}
+    $y = \mathcal{F}[x]$由以下方程确定 \[
+        \sum_{k = 0}^N a_k y(n - k)  = \sum_{k = 0}^M b_k x(n - k)\]
+    称如上的系统为$N$阶滤波器.
+\subsubsection{流图}
+    有三种单元: 延时单元, 加法单元, 乘法单元. 如图\ref{sys-unit-graph}所示.
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{sys-unit-graph.png}
+    \caption{三种流图单元}
+    \label{sys-unit-graph}
+    \end{figure*}
+\paragraph{构建方法} \begin{itemize}
+        \item 直接I型构建法. 简单明白.
+        \item 级联滤波器. 减少延时单元的深度, 降低因过深的延时单元链造成的指数级误差.
+        \item 直接II型构建法. 减少了对输入和输出状态的存储, 即延时单元减少.
+    \end{itemize}
+\subsubsection{冲激响应}
+    $\mathcal{F}[\delta(n)]$称为$\mathcal{F}$的冲激响应 (Impluse Response).
+    根据冲激响应是否在有限时间内收敛到$0$, 也分为有限和无限冲激响应.\par
+    记$h(x) = \mathcal{F}[\delta]$, 因为$x(n) = \sum_k x(k) \delta(n - k) = x * \delta$,
+    故不严谨地有,
+    \begin{align*}
+        \mathcal{F}\left[x\right] &= \mathcal{F}\left[x * \delta\right] \\ 
+        &= \mathcal{F}\left[\sum_k x(k)\delta(n - k)\right]\\
+        &= \sum_k x(k) \mathcal{F}\left[\delta(n - k)\right]\\
+        &= \sum_k x(k) h(n - k)\\
+        &= x * \mathcal{F}\left[\delta\right]
+    \end{align*}
+\paragraph{应用} \begin{description}
+        \item[稳定定理] $\sum_n |h(n)|$绝对收敛 $\Leftrightarrow$ $\mathcal{F}$是稳定系统.
+        \item[串联] 设$\mathcal{F}[\delta] = h_{\mathcal{F}},\,\mathcal{G}[\delta] = h_{\mathcal{G}}$, 
+            则$\mathcal{F} \mathcal{G} [\delta] = h_{\mathcal{F}} * h_{\mathcal{G}}$
+        \item[并联] $\left(\mathcal{F} + \mathcal{G}\right) [\delta] = h_{\mathcal{F}} + h_{\mathcal{G}}$
+    \end{description}
+
+\subsection{频域描述}
+    以下频域描述都采用DTFT而非CTFT.
+\subsubsection{定义} $X = \DTFT[x]$是信号的频域表示, $Y = \mathcal{F}[X]$,
+    则定义$H(\omega) = \frac{X(\omega)}{Y(\omega)}$为滤波器的频率响应.\par
+    其中将$|H(\omega)|$称为幅频响应, $\arg H(\omega)$称为相频响应.
+\paragraph{性质} \begin{description}
+    \item[和冲激响应的关系] 对$y = x * h$两边DTFT得到$Y = X \cdot \DTFT[h]$\\ 故有$H = \DTFT[h]$
+    \item[周期性] $H(\omega) = \sum_n h(n) e^{-j\omega n}$是周期函数
+    \item[共轭相反] $H(-\omega) = H^*(\omega)$
+\end{description}
+
+\subsection{Z变换}
+\subsubsection{定义} $x(n)$是离散时域信号,
+    则$x$的Z变换定义为$X(z) = \ZT[x(n)](z) = \sum_n x(n) z^{-n}$\par
+    形式上类似DTFT中$e^{-jwn}$换成了$z^{-n}$, 变成了Laurent级数的形式.
+    但是注意Laurent级数是$\sum_n x (n) z^n$, 而Z变换是$\sum_n x (n) z^{-n}$.
+\subsubsection{收敛域} $X(z)$的收敛域 (ROC) 定义为 $\{z \;|\; X(z)\text{收敛}\}$.
+    Laurent级数收敛域是一个环, 但是课程中不考虑环的边界.
+\paragraph{收敛域求解} $\Omega$为Laurent级数$x(n),\,n\in\Zset$的收敛环, 则
+    \[\forall z \in \mathring{\Omega}\;:\;
+        \sum_n x(n)z^{-n}\;\text{收敛} \Leftrightarrow
+        \sum_n x(n)z^{-n}\;\text{绝对收敛} \]
+    收敛环可以通过比值法或根值法求出.
+\subsection{函数空间的理解}
+    可以认为, 基函数是$u_n(z) = z^{-n},\,n \in \Zset$, 由Laurent级数容易得到基函数的完备性.\par
+    设$C$是任何一个以$O$为圆心的圆环, 内积定义为\begin{align*}
+        \left\langle u_n(z), u_m(z) \right\rangle &= \oint_C u_n(z) u_m^*(z) z^{-1} \ud z\\
+            &= \oint_C z^{-n} (z^{-m})^* z^{-1} \ud z\\
+            &= \oint_C r^{-n} e^{-i \theta n} r^{-m} e^{-i \theta m} r^{-1} e^{-i \theta} \ud z\\
+            &= \int_0^{2\pi} i r^{-n-m-1} e^{i \theta (m - n)} \ud \theta\\
+        &= 2 \pi i r^{-n-m-1} \delta_{nm}\end{align*}
+    其中假设$C$是半径为$r$的圆环, $\delta$是Kronecker delta记号.
+\subsubsection{性质}
+    \begin{center}
+    \begin{tabularx}{\textwidth}{>{\bfseries}Sl  SL}
+        线性性 &  $\displaystyle \ZT[\alpha x + \beta y] = \alpha \ZT[x] + \beta \ZT[y]$\\
+        反褶 & $\displaystyle \ZT[x(-n)] = X(z^{-1})$\\
+        共轭 & $\displaystyle \ZT[x^*(n)] = X^*(z^*)$\\
+        压扩 & $\displaystyle \ZT\left[x(\frac{n}{a})\right](z) = \ZT[x](z^a)$, 其中如果$\frac{n}{a}$不是整数则$x(\frac{n}{a}) = 0$\\
+        时移 & $\displaystyle \ZT[x(n + m)] = \ZT[x]z^m$\\
+        频移 & $\displaystyle \ZT[a^n x(n)] = \ZT[x]\left(\frac{x}{a}\right)$\\
+        卷积 & $\displaystyle \ZT[x * y] = X Y,\qquad \ZT[x y] = \frac{1}{2 \pi i} \oint X(v) \,Y\!\left( \frac{z}{v} \right) v^{-1}\ud v  $\\
+        初值 & $\displaystyle x(0) = \lim_{z \to \infty} X(z)$, 当然极限不存在时此式无效\\
+        终值 & $\displaystyle \lim_{n \to \infty} x(n) = \lim_{z \to 1} (z - 1) X(z)$, 当然极限不存在时此式无效\\
+    \end{tabularx}
+    \end{center}
+
+    \begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\textwidth}{|SCSCSC|}
+            \Topline $\displaystyle x(n)$ & $\displaystyle X(z)$ & ROC(r1, r2) \\ \Midline
+            $\displaystyle \delta(n) $ & $\displaystyle 1 $ & $\displaystyle [0, \infty]$ \\
+            $\displaystyle u(n) $ & $\displaystyle \frac{1}{1 - z^{-1}}$ & $\displaystyle (1, \infty] $\\
+            $\displaystyle G_N(n) $ & $\displaystyle \frac{1 - z^{-N}}{1 - z^{-1}}  $ & $\displaystyle (0, \infty] $\\
+            $\displaystyle a^n $ & 不存在 & 空 \\
+            $\displaystyle a^nu(n) $ & $\displaystyle \frac{1}{1 - az^{-1}}$ & $\displaystyle (\,|a|, \infty]  $\\
+            %$\displaystyle   $ & $\displaystyle  $ & $\displaystyle   $\\
+            \Bottomline
+    \end{tabularx}
+    \caption{常见信号的Z变换}
+    \end{table}
+
+\subsubsection{逆变换求解}
+\paragraph{数值方法} 如果$X(z)$是有理函数, 则可以通过多项式除法来求解. 可以依次求出$x(0), x(1) \ldots$.
+\paragraph{留数法} 根据留数定理, 可求得$x(n) = \sum_{z_p\text{是极点}} \Res\left[X(Z) z^{n - 1}, z_p\right]$.\
+    设$z_0$是$f(z)$的$n$级极点, 则$\Res[f(z), z_0] = \frac{1}{(n-1)!} \lim_{z \to z_0} \D^{n-1} \left( (z - z_0)^n f(z) \right)$.
+    可以一次得到对于一个$n$的$x(n)$.
+\paragraph{有理函数展开法} 类似生成函数, 直接求根展开有理函数. 可以一次得到所有$x(n)$.
+
+\subsection{系统函数}
+    记$X(z) = \ZT[x], Y(z) = \ZT[y]$, 则定义\[H(z) = \frac{Y(z)}{X(z)}\]称$H(z)$为系统的响应函数.\par
+\paragraph{性质} 频率响应基本相同, 另有\begin{description}
+        \item[因果性] $H(z)$是因果系统的充要条件是其收敛域无界, 即$r2 = \infty$
+        \item[稳定性] $H(z)$是稳定系统的充要条件是其在单位圆上绝对收敛, 即$r1 < 1$
+    \end{description}
+\subsubsection{和差分方程的关系}
+    对于差分方程描述$\sum_{k = 0}^N a_k y(n - k) = \sum_{k = 0}^M b_k x(n - k)$, 两边做ZT即有
+    \[
+        H(z) = \frac{\sum_{k = 0}^N a_k z^{-k}} { \sum_{k = 0}^M b_k z^{-k}} \]
+\subsubsection{和频率响应的关系}
+    根据定义即有\[
+        H(z) = H(e^{j\omega})\]
 
 \section{好题}
 \paragraph{CTFT} 不用暴力求$F(\omega)$, 其中$f(t) = \begin{cases} |\sin(\pi t)| & |t| < 1\\ 0 & \text{otherwise} \end{cases}$
