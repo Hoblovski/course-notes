@@ -4,6 +4,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{tabularx}
 
 \title{信号处理原理}
 
@@ -19,6 +20,33 @@
 \DeclareMathOperator{\ud}{\mathrm{d}}
 \DeclareMathOperator{\Rset}{\mathbb{R}}
 \DeclareMathOperator{\Zset}{\mathbb{Z}}
+\DeclareMathOperator{\sgn}{\mathrm{sgn}}
+\DeclareMathOperator{\Sa}{\mathrm{Sa}}
+
+% for simulating booktabs rules; so they work with vertical lines
+\newlength{\Oldarrayrulewidth}
+\newcommand{\Cline}[2]{
+  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}\cline{#2}
+  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
+\newcommand{\Hline}[1]{
+  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}\hline
+  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
+\newcommand{\Topline}{\Hline{0.08em}}
+\newcommand{\Bottomline}{\Hline{0.08em}}
+\newcommand{\Midline}{\Hline{0.05em}}
+\newcommand{\CMidLine}[1]{\Cline{0.05em}{#1}}
+
+% for formatting a row
+\newcolumntype{+}{>{\global\let\currentrowstyle\relax}}
+\newcolumntype{^}{>{\currentrowstyle}}
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}#1\ignorespaces}
+
+% define new stretchable column types
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
 
 \begin{document}
 \maketitle
@@ -29,19 +57,25 @@
 \subsection{记号}
     \begin{table}[ht!]
         \centering
-        \begin{tabular}{|c|c|}
-            \hline
-            $u(t)$ & 单位阶跃信号\\ \hline
+        \begin{tabularx}{\textwidth}{|c|L|}
+            \Topline
+            记号 & 解释和性质 \\ \Midline
+            $u(t)$ & 单位阶跃信号\\ \Midline
+            $\delta(t)$ & 单位冲激信号 $\delta(t) = \frac{1}{a} \delta(\frac{t}{a})$ \\ \Midline
             $G(t)$ & 原点单位脉冲信号, $G(t) = \begin{cases}
                 1 & -\frac{1}{2} < t < \frac{1}{2}\\
                 0 & otherwise \end{cases}$
-                \\ \hline
+                \\ \Midline
             $Sa(t$) & Sample函数, $Sa(t) = \begin{cases}
                 \frac{\sin t}{t} & t \neq 0 \\
-                1 & t = 0 \end{cases}$ \\ \hline
-            $\Delta_{T} (t)$ & 周期单位冲激序列, $\Delta_T(t) = \sum_{n} \delta(t - n T)$.\\ \hline
-        \end{tabular}
+                1 & t = 0 \end{cases}$ \\ \Midline
+            $\Delta_{T} (t)$ & 周期单位冲激序列, $\Delta_T(t) = \sum_{n} \delta(t - n T)$\newline
+                其有特别的性质: $\int_{\Rset} f(t) \Delta_T(t) \ud t = \sum_n f(nT)$
+            \\ \Midline
+            $\delta(n)$ & 单位冲激序列 $\delta(n) = \begin{cases}1 & n = 0 \\ 0 & \text{otheriwse}\end{cases}$ \\ \Bottomline
+        \end{tabularx}
     \end{table}
+
 \subsection{定义}
 \paragraph{信号能量} 对于连续函数, $\ENERGY[f(t)] = \int_{-\infty}^{+\infty} \|f(t)\|^2 \ud t$.
     对于离散函数, $\ENERGY[x(t)] = \sum_{n = -\infty}^{\infty} \|x(n)\|^2$.
@@ -52,8 +86,8 @@
         \item[Dirichlet积分] $\int_{-\infty}^{\infty} Sa(t) \ud t = \pi$
         \item[Gaussian积分] $\int_{-\infty}^{\infty} e^{-t^2} \ud t = \sqrt{\pi}$
         \item[冲激函数的筛选特性] $\int_{-\infty}^{\infty} f(t) \delta(t - t_0) = f(t_0)$
+        \item[冲激函数的位移特性] $f(t) * \delta(t - t_0) = f(t - t_0)$, 注意冲激函数点乘得值, 卷积得函数
     \end{description}
-
 
 \section{CTFT}
 \subsection{定义}
@@ -71,7 +105,8 @@
     \begin{description}
         \item[线性性] $\displaystyle \CTFT[\alpha f + \beta g] = \alpha \CTFT[f] + \beta \CTFT[g]$
         \item[唯一性] $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$
-        \item[对偶性] $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(t)$
+        \item[对偶性] $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(-t)$ 特别注意最后的负号
+        \item[对偶性 (赫兹域)] $\displaystyle \CTFT [ F(\nu) ] = f(-t)$ 特别注意最后的负号
         \item[反褶] $\displaystyle \CTFT[f(-t)] = F(-\omega)$
         \item[共轭] $\displaystyle \CTFT[f^*(t)] = F^*(-\omega)$
         \item[压阔] $\displaystyle \CTFT[f(at)] = \frac{1}{|a|} F(\frac{\omega}{a})$
@@ -96,6 +131,9 @@
                 $\displaystyle \cos (\omega_0 t)$ & $\displaystyle \pi \delta(\omega - \omega_0) + \pi \delta(\omega + \omega_0)$ \\ \hline
                 $\displaystyle \sin (\omega_0 t)$ & $\displaystyle j \pi \delta(\omega + \omega_0) - j \pi \delta(\omega - \omega_0)$ \\ \hline
                 $\displaystyle \Delta_{T_1} (t)$ & $\displaystyle \omega_1 \Delta_{\omega_1}(\omega),\quad \omega_1 = \frac{2\pi}{T_1}$ \\ \hline
+                $\displaystyle e^{j \omega_0 t} [\alpha \le t < \beta]$ & $\displaystyle \frac{e^{j(\omega_0 - \omega)\beta} - e^{j(\omega_0-\omega)\alpha}}{j (\omega_0 - \omega)}$ \\ \hline
+                $\displaystyle \sgn(t)$ & $\displaystyle \frac{2}{j\omega}$\\\hline
+                $\displaystyle \frac{1}{t}$ & $\displaystyle \pi j \sgn(\omega)$\\\hline
         \end{tabular}
     \end{table}
 
@@ -157,11 +195,37 @@
     \end{description}
 
 \section{DFT}
+% TODO
+%       t                       f
+%       无限长                  无限长
+% 抽样
+% t被冲激串作用, f被变成周期函数
+%       可数多                  有限长
+% 截断
+% t再加上有限长 
+%       可数多+有限长=有限多    有限长
+% 周期延拓
+% t变成周期函数, f一定是离散的
+%       有限多                  有限长+可数多=有限多
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+%
+
+
 \subsection{定义}
-    设有序列长度为$L$的信号$x(0), x(1) \ldots x(L - 1)$,
-    $N$个谱值$\omega_0 = 0, \omega_1 = \frac{2\pi}{N} \ldots \omega_{N - 1} = \frac{(N-1) \cdot 2\pi}{N}$
-        均匀分布在Nyquist区间$[0, 2\pi]$上.\par
-    定义\[
+    数字信号$x$是长度为$L$的信号$x(0), x(1) \ldots x(L - 1)$,
+    考虑$X = \DTFT[x]$在$\omega_k$上的值$X(\omega_k)$. 其中
+    $\omega_0 = 0, \omega_1 = \frac{2\pi}{N} \ldots \omega_{N - 1} = \frac{(N-1) \cdot 2\pi}{N}$
+    是Nyquist区间$[0, 2\pi)$上均匀分布的$N$个频率. 这样即得到DFT的定义
+    \[
         X(k) = X(\omega_k) = \DFT[x(n)] = \sum_{n = 0}^{L - 1} x(n) W_N^{nk},\quad 0 \le k \le N - 1\]
     为其N点DFT
     上下文不清楚时, $\DFT$应加角标$N$. 其中$W_N$是$N$次单位根倒数$W_N = e^{- j \frac{2 \pi}{N}}$.\par
@@ -176,19 +240,39 @@
 
 \subsection{性质}
     基本与DTFT性质相同. 此外, DFT频谱是周期函数, 周期为$N$.
-    \begin{description}
-        \item[和CTFT的关系] $\DFT[x](k) = \CTFT[\mathbf{Trunc_L} f_{S}](\frac{k}{N} \omega_S)$
-        \item[线性性] $\displaystyle \DFT[\alpha x + \beta y] = \alpha \DFT[x] + \beta \DFT[y]$
-        \item[周期性] $\displaystyle X(k + N) = X(k)$
-        \item[对偶性] $\displaystyle \DFT[X(k)] = N x(-n)$
-        \item[反褶] $\displaystyle \DFT[x(-n)] = X(-k)$
-        \item[共轭] $\displaystyle \DFT[x^*(n)] = X^*(-k)$
-        \item[时移] $\displaystyle \DFT[x(n + m)] = X(k) W_N^{km}$
-        \item[频移] $\displaystyle \DFT[x(n) W_N^{nm}] = X(k + m)$
-        \item[卷积] $\displaystyle \DFT[x * y] = X Y,\quad \DFT[x y] = \frac{1}{N} X * Y$\\
-            其中的卷积$X * Y$是周期函数的卷积$\sum_{m = 0}^{N-1} X(m) Y(n-m)$
-        \item[能量] $\displaystyle \ENERGY[x] = \frac{1}{N} \ENERGY[\DFT[x]]$, 亦称Parseval定理
-    \end{description}
+    \begin{table}[ht!]
+    \begin{tabularx}{\textwidth}{|>{\bfseries}r  L|}
+        \Topline
+        和DTFT的关系 &  $\DFT[x](k) = \DTFT[x](\frac{k}{N} 2\pi)$    \\
+        和CTFT的关系 &  $\DFT[x](k) = \CTFT[\mathbf{Trunc_L} f_{S}](\frac{k}{N} \omega_S)$    \\
+        线性性 &  $\displaystyle \DFT[\alpha x + \beta y] = \alpha \DFT[x] + \beta \DFT[y]$    \\
+        周期性 &  $\displaystyle X(k + N) = X(k)$    \\
+        对偶性 &  $\displaystyle \DFT[X(k)] = N x(-n)$    \\
+        反褶 &  $\displaystyle \DFT[x(-n)] = X(-k)$    \\
+        共轭 &  $\displaystyle \DFT[x^*(n)] = X^*(-k)$    \\
+        时移 &  $\displaystyle \DFT[x(n + m)] = X(k) W_N^{km}$    \\
+        频移 &  $\displaystyle \DFT[x(n) W_N^{nm}] = X(k + m)$    \\
+        卷积 &  $\displaystyle \DFT[x * y] = X Y,\quad \DFT[x y] = \frac{1}{N} X * Y$\newline
+            其中的卷积$X * Y$是周期函数的卷积$\sum_{m = 0}^{N-1} X(m) Y(n-m)$   \\
+        能量 &  $\displaystyle \ENERGY[x] = \frac{1}{N} \ENERGY[\DFT[x]]$, 亦称Parseval定理\\
+        \Bottomline
+    \end{tabularx}
+    \caption{DFT的性质}
+    \end{table}
+
+\subsection{例子}
+    以下均假设DFT为N点DFT.
+    \begin{table}[ht!]
+    \centering
+    \begin{tabularx}{\textwidth}{|CC|}
+            \Topline $\displaystyle x(n)$ & $\displaystyle X(k)$ \\ \Midline
+            $\displaystyle G_N(n)$ & $\displaystyle N\delta(k) = \begin{cases} N & k = 0\\ 0 & \text{otherwise}\end{cases}$
+            \\
+            \Bottomline
+    \end{tabularx}
+    \caption{DFT的例子}
+    \end{table}
+
 
 \subsection{和其他傅里叶变换的关系} 参见下表.
     \begin{table}[ht!]
@@ -208,9 +292,31 @@
     原理: 设$N = 2N'$, 令$y(n) = x(2n), z(n) = x(2n+1),\quad 0 \le n \le N' - 1$, 则有\[
         \DFT_{N} [x] = \DFT_{N'} [y] + W_N^k \DFT_{N'} [z] \]
 
-\section{TODO}
+\section{STFT}
+    non-stationary signal: not ideal, F[t] should change
+        频域信号也可能会变化, 如喊话声音变化, 不同时间信号的频谱是不一样的.\par
+
+    Gabor transform. 短时变化: 信号加窗, 只考虑窗内信号.\par
+    窗内认为频谱不变.\par
+
+% \section{TODO}
     %DTFT->CTFT: \[ X(\omega) = \CTFT[f_{S}](:w
-    对于$x(n), n < 0 or n \ge N$, 有几种看法:
-        周期延拓; 未定义; 0
+
+
+\section{好题}
+\paragraph{CTFT} 不用暴力求$F(\omega)$, 其中$f(t) = \begin{cases} |\sin(\pi t)| & |t| < 1\\ 0 & \text{otherwise} \end{cases}$
+
+
+\pagebreak
+\section{好题解析}
+\paragraph{CTFT} 不用暴力求$F(\omega)$, 其中$f(t) = \begin{cases} |\sin(\pi t)| & |t| < 1\\ 0 & \text{otherwise} \end{cases}$\par
+    考虑$f(t) = \sin(\pi t) \cdot \left( G(t-0.5) + -G(-t+0.5) \right)$\par
+    答案是 $\left[\Sa\left(\frac{\omega - \pi}{2}\right) - \Sa\left(\frac{\omega + \pi}{2}\right)\right] \cos \frac{\omega}{2}$
+
+\section{OTHER}
+\subsection{1}
+对于$f(t)$和$T_S$, 令 $f_S(t) = f(s) \cdot \Delta_{T_S}(t)$, 令 $ x(n) = f(nT_S)$, 则有 \[
+    \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S}
+    \]
 
 \end{document}

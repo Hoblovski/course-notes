@@ -1,0 +1,57 @@
+静态语义分析与中间代码生成
+
+stmt 的类型只会有 ok 和 err
+
+类型检查程序
+    语法检查的实现可以通过语法制导的方式实现
+
+
+    E -> DELTA E1 M E2 N E3 {
+            backpatch(E1.falselist, M.gotostm)
+            backpatch(E2.truelist, N.gotostm)
+            E.truelist = E3.falselist
+            E.falselist = merge E1.truelist  E2.falselist  E3.truelist
+        }
+
+    M -> eps {
+            M.instr = nextinstr 
+        }
+
+    N: same as M
+
+
+
+definition
+    s.a.    B.truelist
+        一系列 jump 指令, 他们的具体跳转地址还没有确定
+            list<instr> = {i1, i2...}
+        满足: 
+            isJump(ik)
+            not jumpTargetIsDetermined(ik)
+            intendedJump(ik) == intendedJump(when B is true)
+    s.a.    B.falselist
+        一系列 jump 指令
+        他们跳转到的目标是 当B为false 时应当执行的语句
+    s.a.    S.nextlist
+        一系列 jump 指令
+        它们跳转到的目标是 S 执行完的刚下一条语句
+
+    backpatch(list, determinedJumpTarget)
+        list:
+            a list of jump instrs, whose jump target is not determined
+            either B.truelist, B.falselist, S.nextlist
+        action:
+            for e in list:
+                determineJumpTarget(e, determinedJumpTarget)
+
+    e.g.
+        S.nextlist := merge(S1.nextlist, merge(N.nextlist, S2.nextlist))
+            desinate that (each jump-to-next for (S1, N, S2)) should jump to
+                (next <of S>)
+
+
+E ->        INT                                 E.t = Int
+            BOOL                                E.t = Bool
+            VAR                                 E.t = E.e.g(VAR)
+            l VAR:T -> {E1.e=E.e.c()} E1        E.t = T.t -> E1.t
+

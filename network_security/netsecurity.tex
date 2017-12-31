@@ -314,12 +314,6 @@
     路由过程中, 路由前后分别有入口/出口端ACL. 入口端ACL在查路由表前检查, 出口端ACL在转发前检查.
 
 \subsection{VLAN虚拟局域网}
-\paragraph{交换机学习} 交换机初始时, MAC-端口表是空的.
-    根据后向学习算法, 
-    任何端口i进入一个包 (MAC地址为p), 那么以后所有到p的包都应被发到i端口.
-    如果这个包的MAC对应端口未知, 那么洪泛到所有端口.\par
-    问题: 广播灾难.\par
-    解决: 中间价路由器, 路由器通过IP而非MAC.\par
 \paragraph{基本概念} VLAN类似一个独立的网桥, 但是可能一个VLAN跨越不同的交换机, 同一个交换机有不同的VLAN.
 \paragraph{类型} 如 \begin{description} 
         \item[基于物理接口] 按照交换机的接口分配.\\ 配置简单, 但是不灵活.
@@ -328,11 +322,20 @@
     \end{description}
 \paragraph{优点} \begin{itemize}
         \item 解决人员维护性
-        \item 控制广播流量, 防止洪泛灾难
+        \item 控制广播流量, 防止交换机后向学习的洪泛造成的``洪范灾难''
         \item 增强安全性
     \end{itemize}
 \paragraph{缺点} 缺乏标准
 
+\section{网络安全协议}
+    协议基本要素: 层次 (OSI 7层中哪一层), 格式, 行为 (亦称控制).
+\subsection{IPsec}
+    与 IP 在同一层. 功能 \begin{description}
+        \item[认证] 确认包的发送者真实, 包不被篡改
+        \item[加密] 流量管理
+        \item[密钥管理] 密钥的安全交换
+    \end{description}
+\paragraph{原理} IPsec的可以有三种报头: 认证 AH, 加密 ESP, 加密认证 ESP.
 
 \pagebreak \appendix
  
