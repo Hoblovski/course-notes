@@ -4,6 +4,14 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{tabularx}
+\usepackage{bigfoot}
+\usepackage{fancyvrb}
+% define new stretchable column types
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
 
 \title{编译原理}
 
@@ -115,14 +123,15 @@
         A &\to \beta_1 B \,|\, \beta_2 B \,|\, \ldots \\
         B &\to \alpha_1 B \,|\, \alpha_2 B \,|\, \ldots \,|\, \epsilon
     \end{align*}
-\paragraph{去除间接左递归} 要求原文法无环$A \not\Rightarrow^+ A$, 无$\epsilon$产生式$A \to \epsilon$. 按照如下算法\begin{enumerate}
-        \item 将非终结符编号为$A_1, A_2 \ldots A_n$
-        \item \begin{verbatim}for i = 1 to n
+\paragraph{去除间接左递归} 要求原文法无环$A \not\Rightarrow^+ A$, 无$\epsilon$产生式$A \to \epsilon$.\par
+    首先将非终结符编号为$A_1, A_2 \ldots A_n$, 然后\begin{verbatim} 
+for i = 1 to n
     for j = 1 to i-1
-        对于所有 A_i -> A_j \alpha, 代替以 A_i -> \beta \alpha, 其中 A_j -> \beta
+        对于所有 A_i -> A_j \alpha,
+            代替以 A_i -> \beta \alpha,
+            其中 A_j -> \beta
     消除A_i的直接递归
 \end{verbatim}
-    \end{enumerate}
 \paragraph{消除左公因子} 直接将左公因子作为新的符号即可.
 
 
@@ -232,20 +241,134 @@
 \paragraph{合并LR(1)同芯状态} 同芯: $[A\to\alpha.\beta, a]$中$A\to\alpha.\beta$相同
 
 
+% \section{Intermediate Code Generation}
+% \paragraph{DAG} expression DAG可以用来代替expression tree
+% \subsection{TAC} Three Address Code 形如 \\
+%     A = B op C\\
+%     A = op B\\
+%     A = B\\
+%     goto lbl\\
+%     if x goto lbl\\
+%     ifnot x goto lbl\\
+%     if x relop y goto lbl\\
+%     param x1, param x2...param xn, call p, n\\
+% \paragraph{addess} 可以是name, constant, 或者编译器生成的中间变量
+% % TODO
 
-\pagebreak
-\section{Intermediate Code Generation}
-\paragraph{DAG} expression DAG可以用来代替expression tree
-\subsection{TAC} Three Address Code 形如 \\
-    A = B op C\\
-    A = op B\\
-    A = B\\
-    goto lbl\\
-    if x goto lbl\\
-    ifnot x goto lbl\\
-    if x relop y goto lbl\\
-    param x1, param x2...param xn, call p, n\\
-\paragraph{addess} 可以是name, constant, 或者编译器生成的中间变量
+
+\section{运行时存储组织}
+\subsection{存储分配策略}
+    决定变量如何安排在内存中. 可以分为静态和动态分配, 其中动态分配又分为栈式和堆式.
+\paragraph{静态分配} 
+    编译期确定变量在内存中的位置, 常用于全局变量或\verb/static/变量.
+    这样无法处理递归函数.
+\paragraph{栈式分配}
+    空间的分配根据进入退出函数在运行期确定.
+    可有效实现动态嵌套的程序结构.
+\paragraph{堆式分配}
+    最灵活, 需要操作系统和程序员或运行时内存系统共同管理.
+\subsection{活动记录}
+    活动记录即栈帧, 其中保存一个函数调用的所有相关数据, 包括实参, 返回地址, 局部变量, 保存的寄存器等等.\par
+\subsubsection{不允许嵌套函数}
+    这种情况下, 进入一个函数分配一个栈帧, 从函数中返回就回收其 栈帧 .
+    每个函数能看到的符号只有全局符号和自己栈帧中的符号.
+\subsubsection{允许嵌套函数}
+\paragraph{基本约定} 
+    称被嵌套的函数是子函数, 嵌套其他函数的函数是父函数.
+    一个子函数有且仅有一个父函数, 只有父函数的函数体中才能调用子函数.\par
+    子函数能够访问父函数的变量\footnote{这里变量声明都类似Pascal语言, 是在函数体前生命的}.
+\paragraph{问题}
+    一个函数能看到的符号除了全局符号和自己栈帧中的符号, 还可能有父函数的符号.
+    因此需要查找父函数的栈帧.
+\paragraph{函数继承树}
+    将所有函数按照父子函数关系建立一颗树,
+    其中\verb/main/为树根, 深度为$0$.
+    注意此处的\verb/main/不像C的\verb/main/是一个全局函数,
+    而相当于整个程序, 可以参考Pascal的语法\begin{verbatim}program ...
+... 
+begin 
+    (* main *) 
+end;\end{verbatim} 所以全局变量是\verb/main/的变量, 全局函数是\verb/main/的子函数.\par
+    容易证明, 在程序运行的任何时刻, 深度为$k$的所有函数至多有一个是活动的,
+    即深度为$k$的函数至多有一个, 其栈帧在当前运行栈中.
+    并且如果深度为$k$的某函数是活动的, 则一定有深度是$k-1$的某函数也是活动的, 且后者是前者的父函数.
+\paragraph{Display表方法}
+    维护一个表$D_n$.
+    $D_n$表示从\verb/main/到当前函数在函数继承树上构成的链中,
+    当前函数深度为$n$的祖先函数的栈帧位置.\par
+    如对于以下程序\pagebreak
+\begin{Verbatim}[samepage=true]
+program main;
+
+    function A(params): ret
+        function B(params): ret
+            function C(params): ret
+            begin
+                ... C(args); ...
+            end; (* end function C *)
+        begin
+            ... C(args); ...
+        end; (* end function B *)
+    begin
+        ... B(args); ...
+    end; (* end function A *)
+
+    function A1(params): ret
+    begin
+        ... A(args); ...
+    end; (* end function A1 *)
+
+begin
+    ... A1(args); ...
+end.
+\end{Verbatim}
+第二次运行\verb/C/时, 栈应当类似于\\
+    \begin{center}\begin{tabularx}{0.6\textwidth}{r|C|c|}
+        \cline{2-3}
+        & whose stackframe & depth\\
+        \cline{2-3}
+        $D_3 \to$ & \verb/C/ & 3
+        \\\cline{2-3}
+        & \verb/C/ & 3
+        \\\cline{2-3}
+        $D_2 \to$ & \verb/B/ & 2
+        \\\cline{2-3}
+        $D_1 \to$ & \verb/A/ & 1
+        \\\cline{2-3}
+        & \verb/A1/ & 1
+        \\\cline{2-3}
+        $D_0 \to$ & \verb/main/ & 0
+        \\\cline{2-3}
+    \end{tabularx}
+    \end{center}
+维护Display
+
+%\paragraph{程序内存布局} 程序的虚拟内存空间的典型安排如\\
+%    \begin{center}
+%    \begin{tabularx}{0.5\textwidth}{|C|}
+%        \hline
+%        0xFFFF\ldots\\
+%        \hline
+%        保留\\
+%        \hline
+%        栈\\
+%        $\downarrow$\\
+%        \hline
+%        $\uparrow$\\
+%        堆\\
+%        \hline
+%        运行时库\\
+%        \hline
+%        静态数据\\
+%        \hline
+%        代码段\\
+%        \hline
+%        保留\\
+%        \hline
+%        0x0000\ldots\\
+%        \hline
+%    \end{tabularx}
+%    \end{center}
 
 %If the attributes are all synthesized, and the actions occur at the ends of the
 %productions, then we can compute the attributes for the head when we reduce
