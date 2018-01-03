@@ -1,4 +1,4 @@
-    % 编译使用xelatex
+% 编译使用xelatex
 \documentclass{ctexart}
 
 \usepackage{amsmath}
@@ -6,8 +6,35 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{subfigure}
+\usepackage{tabularx}
 
 \DeclareMathOperator{\Zset}{\mathbb{Z}}
+
+% for simulating booktabs rules; so they work with vertical lines
+\newlength{\Oldarrayrulewidth}
+\newcommand{\Cline}[2]{
+  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}\cline{#2}
+  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
+\newcommand{\Hline}[1]{
+  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}\hline
+  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
+\newcommand{\Topline}{\Hline{0.08em}}
+\newcommand{\Bottomline}{\Hline{0.08em}}
+\newcommand{\Midline}{\Hline{0.05em}}
+\newcommand{\CMidLine}[1]{\Cline{0.05em}{#1}}
+
+% for formatting a row
+\newcolumntype{+}{>{\global\let\currentrowstyle\relax}}
+\newcolumntype{^}{>{\currentrowstyle}}
+\newcommand{\rowstyle}[1]{\gdef\currentrowstyle{#1}#1\ignorespaces}
+
+% define new stretchable column types
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
 
 \title{计算机网络安全技术}
 
@@ -37,41 +64,8 @@
     $D(m) = \sigma m$, 要求$\mathcal{M} = \Sigma^L$, $\sigma$是$[0, L)$上的置换.
 \paragraph{攻击} 频率分析, 包括多元组频率分析.
 
-%   *** 不写S-DES了 ***
-%\subsection{DES算法}
-%    对称加密, $K_D = K_E$, 密钥通过秘密信道分配. 课程介绍DES的一个简化版本S-DES.
-%    是一个块加密算法, 输入输出是8位的, 密钥是10位的.
-%    分为两步: 计算次密钥$K_1$, $K_2$, 之后利用次密钥加密.\par
-%    具体过程略.
-%\paragraph{次密钥加密}
-%    有如下元素 \begin{enumerate}
-%        \item 文字$M = \langle M_0, \ldots M_9 \rangle$
-%        \item 密钥$K = \langle K_0, \ldots K_9 \rangle$
-%        \item $\sigma_i$是已知的8位置换
-%        \item $\sigma_{SW}$是已知的8位置换
-%        \item $f_{K_i}$是8位到8位的函数, 由次密钥$K_i$参数化
-%        \item $\sigma{LS, l}$是一个已知的10位置换
-%    \end{enumerate}
-%    则有 \begin{align*}
-%        D(M) &= \sigma_i^{-1} ( f_{K_2} ( \sigma_{SW} ( f_{K_1} ( \sigma_i (M) ) ) ) ) \\
-%        E(C) &= \sigma_i^{-1} ( f_{K_1} ( \sigma_{SW} ( f_{K_2} ( \sigma_i (C) ) ) ) )
-%    \end{align*}
-%    其中$f_{K_i}(X)$的定义如下.\par
-%    有如下元素 \begin{enumerate}
-%        \item $EP$是已知的4位到8位的函数
-%        \item $S0, S1$是已知的4位到2位的函数
-%        \item $\sigma_4$是4位置换
-%    \end{enumerate}
-%    则算法如下 (以下特别使用大段顺序) \begin{enumerate}
-%        \item $t = EP(X_{3 \ldots 0}) \oplus K_i$
-%        \item $h = X_{7 \ldots 4} \oplus \sigma_4(S0(t_{7 \ldots 4}) , S1(t_{3 \ldots 0}))$
-%        \item $f_{K_i}(X) = (h, X_{3 \ldots 0})$
-%    \end{enumerate}
-%\paragraph{计算$K_1, K_2$}
-%    有如下元素 \begin{enumerate}
-%    \end{enumerate}
-
-\subsection{Feistel密码结构}
+\subsection{对称密码}
+\subsubsection{Feistel密码结构}
 \paragraph{Feistel的密码观点}
     \begin{enumerate}
         \item 使用乘积密码
@@ -84,15 +78,12 @@
     \end{description}
 \paragraph{Feistel网络}
     大致如图所示.
-    \begin{figure*}[ht]
-    \vskip 0.2in
-    \begin{center}
-    \centerline{\includegraphics[width=0.6\textwidth]{feistel-net}}
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.6\textwidth]{feistel-net.png}
     \caption{经典的Feistel网络结构}
     \label{lenet-structure}
-    \end{center}
-    \vskip -0.2in
-    \end{figure*}
+    \end{figure}
 \paragraph{Feistel网络的元素}
     \begin{description}
         \item[分组长度和密钥长度] 越长越安全, 但是效率越低
@@ -101,7 +92,10 @@
         \item[$F$函数] 越复杂越安全
     \end{description}
 
-\subsection{常见对称密码}
+\subsubsection{常见对称密码}
+    对称密码的特点是只有一个密钥, 加密过程和解密过程是基本相同的.\par
+    通信双方如果需要交换密钥, 则需要在安全的信道上交换密钥.\par
+    对称密码的速度通常较非对称密码快, 因此常用于大量数据的加密上.\par
 \paragraph{DES算法}
     DES是对称密钥算法, 基于Feistel网络结构.
     密钥长度为56位, 块长度是64位, 迭代16轮.\par
@@ -119,9 +113,105 @@
 \paragraph{AES算法}
     AES不是Feistel结构, 每一轮处理整个输入 (而非分成2部分).
 
-\subsection{RSA算法}
-    一种块加密方法, 原文和密文都是$[0, N)$中的整数, 常常$N$是2的幂.\par
-\subsubsection{算法}
+\subsubsection{S-DES算法}
+    此处的 S-DES 意为 Simplified DES, 主要做教学展示用.
+    S-DES基于 Feistel 结构, 输入输出是8位的, 密钥是10位的, 位指二进制位.\par
+\paragraph{生成密钥}
+    参考图\ref{s-des-keygen}. 其中置换如
+    \begin{center}
+    \begin{tabularx}{0.8\textwidth}{cCCCCCCCCCC}
+    \Topline
+    $n$ & $0$  & $1$  & $2$  & $3$  & $4$  & $5$  & $6$  & $7$  & $8$  & $9$ \\
+        \Midline
+        $P10(n)$ & $2$&   $4$&    $1$&  $6$&   $3$&   $9$&    $0$&   $8$&   $7$&   $5$\\
+        $shift_1(n)$ & $1$  & $2$  & $3$  & $4$ & $0$ & $6$  & $7$  & $8$  & $9$ & $5$\\
+        $shift_2(n)$ & $2$  & $3$  & $4$ & $0$ & $1$ & $7$  & $8$  & $9$ & $5$ & $6$\\
+    \Bottomline
+    \end{tabularx}
+    \end{center}
+    另外函数$P8(0,\ldots 9) = \left\langle 5, 2, 6, 3, 7, 4, 9, 8 \right\rangle$
+
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=0.5\textwidth]{s-des-keygen.jpg}
+        \caption{S-DES 生成密钥}
+        \label{s-des-keygen}
+    \end{figure}
+
+\paragraph{加密}
+    参考图\ref{s-des-enc} 和 \ref{s-des-fk}, 其中有\par
+    \[IP(0,\ldots 7) = \left\langle 1, 5, 2, 0, 3, 7, 4, 6 \right\rangle\]
+    \[IP^{-1}(0,\ldots7) = \left\langle 3, 0, 2, 4, 6, 1, 7, 5\right\rangle\]
+    \[E/P(0, 1, 2, 3) = \left\langle 3, 0, 1, 2, 1, 2, 3, 0 \right\rangle\]
+    另外$S$的求法是, $S(n_0, n_1, n_2, n_3)$中, $n_0*2 + n_3$作为行, $n_1*2+n_2$作为列, 寻找矩阵中对应元素\[
+        S_0 = \begin{bmatrix}
+            01 & 00 & 11 & 10\\
+            11 & 10 & 01 & 00\\
+            00 & 10 & 01 & 11\\
+            11 & 01 & 11 & 10\end{bmatrix}\qquad
+        S_1 = \begin{bmatrix}
+            00 & 01 & 10 & 11\\
+            10 & 00 & 01 & 11\\
+            11 & 00 & 01 & 00\\
+            10 & 01 & 00 & 11\end{bmatrix}
+    \]
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=0.5\textwidth]{s-des-enc.jpg}
+        \caption{S-DES 加密}
+        \label{s-des-enc}
+    \end{figure}
+
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=0.5\textwidth]{s-des-fk.jpg}
+        \caption{S-DES 的 $F$函数}
+        \label{s-des-fk}
+    \end{figure}
+%g
+%g\paragraph{次密钥加密}
+%g    有如下元素 \begin{enumerate}
+%g        \item 文字$M = \langle M_0, \ldots M_9 \rangle$
+%g        \item 密钥$K = \langle K_0, \ldots K_9 \rangle$
+%g        \item $\sigma_i$是已知的8位置换
+%g        \item $\sigma_{SW}$是已知的8位置换
+%g        \item $f_{K_i}$是8位到8位的函数, 由次密钥$K_i$参数化
+%g        \item $\sigma{LS, l}$是一个已知的10位置换
+%g    \end{enumerate}
+%g    则有 \begin{align*}
+%g        D(M) &= \sigma_i^{-1} ( f_{K_2} ( \sigma_{SW} ( f_{K_1} ( \sigma_i (M) ) ) ) ) \\
+%g        E(C) &= \sigma_i^{-1} ( f_{K_1} ( \sigma_{SW} ( f_{K_2} ( \sigma_i (C) ) ) ) )
+%g    \end{align*}
+%g    其中$f_{K_i}(X)$的定义如下.\par
+%g    有如下元素 \begin{enumerate}
+%g        \item $EP$是已知的4位到8位的函数
+%g        \item $S0, S1$是已知的4位到2位的函数
+%g        \item $\sigma_4$是4位置换
+%g    \end{enumerate}
+%g    则算法如下 (以下特别使用大段顺序) \begin{enumerate}
+%g        \item $t = EP(X_{3 \ldots 0}) \oplus K_i$
+%g        \item $h = X_{7 \ldots 4} \oplus \sigma_4(S0(t_{7 \ldots 4}) , S1(t_{3 \ldots 0}))$
+%g        \item $f_{K_i}(X) = (h, X_{3 \ldots 0})$
+%g    \end{enumerate}
+%g\paragraph{计算$K_1, K_2$}
+%g    有如下元素 \begin{enumerate}
+%g    \end{enumerate}
+
+
+\clearpage
+\subsection{公钥密码}
+    公钥密码即非对称密码. 
+    其中加密和解密使用的是不同的密钥, 称为公钥和私钥.
+    \emph{公钥公开, 用于加密和验证签名; 私钥保密, 用于解密和签名.}\par
+    非对称密码的速度通常较对称密码要慢,
+    所以常常只用于签名\footnote{验证发送者身份的过程},
+    或者用于加密发送对称密码的密钥.
+\paragraph{加密方法} Alice 向 Bob 发送希望加密的信息, 则 Alice 使用 Bob 的公钥加密信息后发送给 Bob.
+\paragraph{签名算法} Bob 希望验证 Alice 的身份, 
+    其给出一个特定的消息, 要求 Alice 用 Alice 自己的私钥加密后发送给 Bob,
+    之后 Bob 再用 Alice 的公钥解密验证.
+\subsubsection{RSA算法}
+    原文和密文都是$[0, N)$中的整数, 常常$N$是2的幂.\par
 \paragraph{前置}
     \begin{enumerate}
         \item 计算大素数 $p$, $q$.
@@ -139,20 +229,17 @@
 \paragraph{原理}
     有效性由Euler定理保证 \[ a^{\varphi(n)} \equiv 1 \pmod{n},\quad \forall a\,:\,(a, n) = 1 \]
     安全性由大数分解困难性保证.
-
-\subsubsection{攻击}
+\paragraph{攻击}
     \begin{description}
         \item[暴力破解] 需要枚举$t \in [0, N)$的空间
         \item[数学攻击] 因子分解$N$
         \item[计时攻击] 按照加密时间推测私钥.
     \end{description}
-
-\subsection{Diffie-Hellman算法}
+\subsubsection{Diffie-Hellman算法}
     用于密钥交换, 而非加密解密, 即通过双方自身的私有密文得到一个共有密文.
-\subsubsection{算法}
 \paragraph{前置}
     \begin{enumerate}
-        \item 寻找素数$p$, 以及$\Zset_p$的生成元$p$ i.e. $p$是原根, 均公开.
+        \item 寻找素数$p$, 以及$\Zset_p$的生成元$a$ i.e. $a$是原根, 均公开.
     \end{enumerate}
 \paragraph{私有密文产生共有密文}
     \begin{enumerate}
@@ -161,6 +248,12 @@
     \end{enumerate}
 \paragraph{原理}
     安全性由离散对数困难性保证.
+\subsubsection{和对称密码的比较}
+    \begin{itemize}
+        \item 笼统地说, 非对称密码并不比对称密码安全.
+        \item 非对称密码不是通用的, 对称密码仍然由于快速而广泛使用
+        \item 公钥密码的密码分配不必传统密码分配简单
+    \end{itemize}
 
 \subsection{密钥分配}
 \subsubsection{传统对称密钥分配}
@@ -198,9 +291,15 @@
 \section{计算机网络安全体系结构}
 \subsection{安全目标}
     \begin{description}
-        \item[保密性] 未授权的实体不能获得信息内容
-        \item[完整性] 信息不能被篡改, 或者能检测篡改
-        \item[可用性] 授权用户能够访问资源, 防止DoS攻击
+        \item[保密性 Confidentiality] 未授权的实体不能获得信息内容
+        \item[完整性 Integrity] 信息不能被篡改, 或者能检测篡改
+        \item[可用性 Availability] 授权用户能够访问资源, 防止DoS攻击
+    \end{description}
+\subsection{手段}
+    \begin{description}
+        \item[加密] 防止未授权的外人获得通信内容, 如防止窃听.
+        \item[认证] 验证通信对等体的身份真实性, 如防止中间人攻击. 可以通俗的理解为, ``发送这条消息的人的确是 Alice''.
+        \item[数字签名] 相当于对通信对等体和消息同时认证, 如防止抵赖. 可以通俗的理解为, ``Alice 的确发送过这条消息''.
     \end{description}
 
 \section{消息认证}
@@ -214,25 +313,32 @@
     \end{description}
 \subsection{消息认证基本概念}
 \subsubsection{消息认证} 确认发送方是真实的, 确认消息违背篡改.
+    \begin{quote}{\itshape 消息认证就是验证所收到的消息确实是来自真正的发送方且未被修改的消息}\end{quote}
 \subsubsection{基本框架} 发送方产生一个认证符; 接收方产生一个认证符, 并且检查双方认证符是否匹配.
 
 \subsection{产生认证符}
-\subsubsection{消息加密作为认证符} 对称加密中可以采用这种方式, 但是不能验证消息是否来自正确的发送方.
-    解决办法是, 附带原文 (而不是密文) 的校验符号.
-    在非对称加密中, 私钥加密只能认证不能加密, 公钥加密则不能认证.
-    解决方法是, 接收方公钥发送方私钥两次加密.
+\subsubsection{消息加密作为认证符}
+\paragraph{对称加密} 为了认证, 要么消息空间是稀疏的, 要么消息中带有校验符号 FCS. 
+    FCS 的计算是在加密之前, 将发送的内容计算出一个校验符, 附到发送内容后一并加密发送.\par
+    可以提供加密和认证, 但是无法提供数字签名.
+\paragraph{非对称加密} 使用私钥加密可以完成签名和认证, 使用公钥加密可以提供保密性,
+    两者都使用可以同时提供加密和认证以及签名.\par
+    但是这样需要 4 次加解密运算, 代价较高.
 \subsubsection{消息认证码MAC}
-    通过消息和密钥, 利用公开的算法计算认证 $= C_K(M)$, $K$是共有密钥, $M$是消息.\par
-    不能完成数字签名: 接收方也有$K$, 因此可以伪造消息.\par
-    实践将一般先加密, 再使用MAC.
-\subsubsection{消息的哈希}
-    通过消息, 利用公开的算法计算认证符$= \mathbf{Hash}(M)$, $M$是消息. 亦称消息摘要. 
-    不同情境下, 其可以提供不同效果, 如\begin{enumerate}
+    通过消息和密钥 (两者都需要, 以验证\emph{这条消息}是发自这个\emph{发送者}),
+    利用公开的算法计算消息认证码 $MAC = C_K(M)$,
+    其中$K$是共有密钥, $M$是消息, $C_K$生成一个固定长度的短数据块.\par
+    提供认证, 但是不提供数字签名: 接收方也有$K$, 因此可以伪造消息.\par
+    可以先加密在使用MAC, 提供加密和认证.
+\subsubsection{消息哈希}
+    通过消息, 计算认证符 $MD = \mathbf{Hash}(M)$, $M$是消息, $\mathbf{Hash}$输出固定长度的短数据. 亦称消息摘要.\par
+    哈希本身不包含对于发送者的验证, 因此一定要对哈希加密. 根据需要的服务, 具体有\begin{itemize}
         \item 对称加密中, 可以加密消息和哈希码, 可以完成加密和认证.
         \item 对称加密中, 可以只加密哈希码, 可以完成认证.
         \item 非对称加密中, 用发送方的私钥加密哈希码, 可以完成认证和数字签名.
         \item 非对称加密中, 用发送方的私钥加密消息和哈希码, 可以完成加密, 认证和数字签名.
-    \end{enumerate}
+    \end{itemize}
+
 \subsection{哈希函数}
 \subsubsection{哈希函数的理论要求}
     要求哈希函数$h = H(M)$有如下性质 \begin{description}
@@ -242,16 +348,22 @@
     \end{description}
 \subsubsection{安全哈希函数的Merkel结构} 
     参见图 \ref{merkel-hash}.
-    \begin{figure*}[ht]
-    \vskip 0.2in
-    \begin{center}
-    \centerline{\includegraphics[width=0.8\textwidth]{merkel-hash}}
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{merkel-hash}
     \caption{Merkel哈希结构}
     \label{merkel-hash}
-    \end{center}
-    \vskip -0.2in
-    \end{figure*}
-\subsubsection{常用哈希举例}  MD5, SHA-1, SHA-2等
+    \end{figure}
+\subsubsection{常用哈希举例} 有MD5, SHA-1, SHA-2, GOST等等.
+\paragraph{MD5} 有如下特点 \begin{itemize}
+        \item 消息可以无限长
+        \item 采用小端结构, 将消息表示为 32 位字的序列
+        \item 填充部分包含了消息的长度
+        \item 填充后消息位数是 512 的倍数, 每个分组$Y_i$大小为 512 位 (64字节, 16个字)
+        \item 中间结果$CV_i$和最后结果$MD$的长度是 128 位 (16字节, 4个字寄存器)
+        \item 由四轮运算组成, 每轮16步迭代
+    \end{itemize}
+
 
 \subsection{数字签名DSS算法}
 \paragraph{应用场景} 来自消息发送双方的攻击, 如接收方伪造发送, 发送方抵赖发送.
