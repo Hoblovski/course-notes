@@ -200,14 +200,14 @@
 
 \clearpage
 \subsection{公钥密码}
-    公钥密码即非对称密码. 
+    公钥密码即非对称密码.
     其中加密和解密使用的是不同的密钥, 称为公钥和私钥.
     \emph{公钥公开, 用于加密和验证签名; 私钥保密, 用于解密和签名.}\par
     非对称密码的速度通常较对称密码要慢,
     所以常常只用于签名\footnote{验证发送者身份的过程},
     或者用于加密发送对称密码的密钥.
 \paragraph{加密方法} Alice 向 Bob 发送希望加密的信息, 则 Alice 使用 Bob 的公钥加密信息后发送给 Bob.
-\paragraph{签名算法} Bob 希望验证 Alice 的身份, 
+\paragraph{签名算法} Bob 希望验证 Alice 的身份,
     其给出一个特定的消息, 要求 Alice 用 Alice 自己的私钥加密后发送给 Bob,
     之后 Bob 再用 Alice 的公钥解密验证.
 \subsubsection{RSA算法}
@@ -318,7 +318,7 @@
 
 \subsection{产生认证符}
 \subsubsection{消息加密作为认证符}
-\paragraph{对称加密} 为了认证, 要么消息空间是稀疏的, 要么消息中带有校验符号 FCS. 
+\paragraph{对称加密} 为了认证, 要么消息空间是稀疏的, 要么消息中带有校验符号 FCS.
     FCS 的计算是在加密之前, 将发送的内容计算出一个校验符, 附到发送内容后一并加密发送.\par
     可以提供加密和认证, 但是无法提供数字签名.
 \paragraph{非对称加密} 使用私钥加密可以完成签名和认证, 使用公钥加密可以提供保密性,
@@ -346,7 +346,7 @@
         \item[弱抗碰撞] 对于$M$, 难以寻找$M'$, 满足$H(M) = H(M')$
         \item[强抗碰撞] $\forall M$, 难以寻找$M'$, 满足$H(M) = H(M')$
     \end{description}
-\subsubsection{安全哈希函数的Merkel结构} 
+\subsubsection{安全哈希函数的Merkel结构}
     参见图 \ref{merkel-hash}.
     \begin{figure}[ht!]
     \centering
@@ -388,38 +388,60 @@
 \paragraph{主体} 提出访问资源请求的人/实体.
 \paragraph{客体} 含有被访问资源的实体.
 \paragraph{访问} 对资源的使用行为, 有时还需包括主客体.
-\paragraph{访问控制矩阵} 定义不同主体对于不同客体可以执行的操作, 如 \[ \begin{array}{|c|c|c|}
-        \hline
-        & \multicolumn{2}{c}{1} \\ 
-        \hline
-        3 & 4 & 5 \\
-        \hline
-    \end{array} \]
-
-\paragraph{3A机制}  认证, 授权, 审计
+\paragraph{访问控制矩阵} 定义不同主体对于不同客体可以执行的操作, 如
+    \begin{center}
+        \begin{tabularx}{0.6\textwidth}{|C|C|C|C|}
+            \hline
+             & $O_2$ & $O_3$ & $O_4$\\
+            \hline
+            $S_1$ & R/W & R & \\
+            \hline
+            $S_2$ & W & & \\
+            \hline
+            $S_3$ & R/W & R/W & R/W\\
+            \hline
+        \end{tabularx}
+    \end{center}
+    按列看, 就是客体的访问控制列表; 按行看, 就是主体的访问能力列表.
 
 \subsection{访问控制模型}
-\subsubsection{自主性访问控制} 每个客体有一个管理者, 管理者将访问权限授权给其他人. 可以看成以主体为核心.
-\paragraph{性质} 易用方便灵活. 但是不能控制信息的流动, i.e. 其他人取得资源后可以自由分发.
-\subsubsection{强制性访问控制} 每个主体和客体有固定的安全级别, 由系统管理员决定. 可以看成以客体为核心.
-\paragraph{No Read Up} 主体只能读取安全级别更低的客体.
-\paragraph{No Write Down} 主题只能写入安全级别更高的客体.
-\subsubsection{基于角色的访问控制} 主体(用户)属于用户组(角色). 每个角色(而非主体)对于不同的客体有不同访问权限. 
+\subsubsection{自主性访问控制}
+    每个客体有一个管理者, 管理者将访问权限授权给其他人. 可以看成以主体为核心.
+    如Unix文件系统.\par
+\paragraph{性质}
+    易用方便灵活. 但是不能控制信息的流动, i.e. 其他人取得资源后可以自由分发.
+\subsubsection{强制性访问控制}
+    每个主体和客体有固定的安全级别, 由系统管理员决定. 可以看成以客体为核心.
+\paragraph{No Read Up}
+    主体只能读取安全级别更低的客体.
+\paragraph{No Write Down}
+    主题只能写入安全级别更高的客体.
+\subsubsection{基于角色的访问控制}
+    主体(用户)属于用户组(角色). 每个角色(而非主体)对于不同的客体有不同访问权限.
     可以看成以访问为核心.
 
-\subsection{防火墙} 在两个不同网络间建立访问控制的软硬件.
-\subsubsection{设计目标} 监控两个网络间所有通信流量, 只有授权的流量才允许通过.
+\subsection{防火墙}
+    在两个不同网络间建立访问控制的软硬件.
+\subsubsection{设计目标}
+    监控两个网络间所有通信流量, 只有授权的流量才允许通过.
 \subsubsection{常用技术} 基于控制, 有\begin{description}
         \item[服务控制] 基于服务端口号 / IP地址
         \item[方向控制] 内到外 / 外到内
-        \item[用户控制] 基于用户的身份
-        \item[行为控制] 基于用户的行为进行控制
+        \item[用户控制] 基于用户的身份, 如 VPN
+        \item[行为控制] 基于用户的行为进行控制, 如垃圾邮件过滤
     \end{description}基于分层, 有\begin{description}
-        \item[网络层] 包过滤技术.\\ 根据定义好的过滤规则审查每个数据包. 性能较高, 但控制能力不强.
-        \item[网络层] 地址转换.\\ 完成转发和地址转换. 不提供额外的安全性，但是可以隐蔽内部网络，节省地址空间
-        \item[传输层] 电路层网关.\\ 检查包所属的会话. 不支持UDP, 性能开销较大.
-        \item[应用层] 应用层代理.\\ 功能强大, 但是性能较低, 并且实现麻烦.
+        \item[网络层] 包过滤技术.\\
+            根据定义好的过滤规则, 包含IP地址, 端口和协议等, 审查每个数据包. 性能较高, 但控制能力不强.\\
+            如路由器中的ACL.
+        \item[网络层] 地址转换.\\
+            完成转发和地址转换. 不提供额外的安全性，但是可以隐蔽内部网络，节省地址空间\\
+        \item[传输层] 电路层网关.\\
+            检查包所属的会话, 即是不是属于客户端和服务器的某一个链接, 不检查协议和内容.
+            不支持无连接的UDP, 性能开销较大.
+        \item[应用层] 应用层代理.\\
+            功能强大, 但是性能较低, 并且实现麻烦.
     \end{description}
+
 \subsubsection{访问控制列表} 一组预先定义好的规则. 其根据包头, 指定包是否被拦截.
 \paragraph{标准和拓展} 标准ACL只检查 Frame 中源IP地址.
     拓展ACL还支持端口, 目标IP, 协议, 检查 Frame 和 Packet.\par
@@ -427,7 +449,7 @@
 
 \subsection{VLAN虚拟局域网}
 \paragraph{基本概念} VLAN类似一个独立的网桥, 但是可能一个VLAN跨越不同的交换机, 同一个交换机有不同的VLAN.
-\paragraph{类型} 如 \begin{description} 
+\paragraph{类型} 如 \begin{description}
         \item[基于物理接口] 按照交换机的接口分配.\\ 配置简单, 但是不灵活.
         \item[基于MAC地址] 局域网中每个MAC地址有对应的VLAN分组.
         \item[基于协议] 根据网络层协议分划VLAN.
@@ -439,9 +461,10 @@
     \end{itemize}
 \paragraph{缺点} 缺乏标准
 
-\section{网络安全协议}
-    协议基本要素: 层次 (OSI 7层中哪一层), 格式, 行为 (亦称控制).
-\subsection{IPsec}
+% \section{网络安全协议}
+%     协议基本要素: 层次 (OSI 7层中哪一层), 格式, 行为 (亦称控制).
+
+\section{IPsec}
     与 IP 在同一层. 功能 \begin{description}
         \item[认证] 确认包的发送者真实, 包不被篡改
         \item[加密] 流量管理
@@ -449,8 +472,89 @@
     \end{description}
 \paragraph{原理} IPsec的可以有三种报头: 认证 AH, 加密 ESP, 加密认证 ESP.
 
+\section{SSL}
+\subsection{特点}
+    \begin{itemize}
+        \item 在IP/TCP参考模型中, SSL / TLS 位于应用层和传输层之间.
+        \item SSL工作在 TCP 之上, 不支持 UDP.
+    \end{itemize}
+\subsection{概念}
+    \begin{description}
+        \item[会话] 交流双方的一个虚拟的连接关系, 指定了密码算法, 主密钥等等消息.
+        \item[连接] 一个通信信道, 通常是一个 TCP 连接.\\
+            一个会话可以被多个连接先后使用.
+    \end{description}
+\subsection{协议}
+\subsubsection{SSL记录协议} SSL记录协议定义了SSL传输信息的格式, 是其他SSL协议的基础.\par
+    高层数据, 通过SSL, 会经过一下步骤 \begin{enumerate}
+        \item 分段, 将高层数据分成小块
+        \item 压缩, 这一步是可选的
+        \item 计算 MAC 附在数据之后
+        \item 使用共享密钥对数据对称加密
+        \item 在加密后的数据前添加 SSL 头部
+    \end{enumerate}
+\subsubsection{握手协议} 握手协议有以下功能\begin{description}
+        \item[身份认证] 认证服务器的身份, 并可选地认证客户的身份
+        \item[协商密码算法] 包含对称密码算法, MAC 算法以及密钥交换算法
+        \item[协商主密钥] 即 master secret, 不过其并不直接用于加密和认证
+    \end{description} 之后分为4个阶段\begin{enumerate}
+        \item 建立连接, 协商算法
+        \item 服务器认证, 服务器发送密钥交换相关消息
+        \item 可选的客户端认证, 客户端发送密钥交换相关消息
+        \item 完成确认
+    \end{enumerate}
+\subsection{https应用}
+\subsubsection{http的问题}
+    \begin{description}
+        \item[嗅探监听] 信息不加密
+        \item[篡改] 信息没有认证
+        \item[伪造服务器] http不验证服务器的可信度
+    \end{description}
+\subsubsection{https基本概念}
+    相对于http, https将消息按照 SSL 加密后再传输, 并且支持通过服务器证书完成的身份验证等.
+
+
+\section{安全电子邮件}
+\subsection{RFC 822}
+    定义了最基础的电子邮件传输方式.\par
+\paragraph{消息格式} 消息包含信封和内容两个部分, 通过空行隔开. 要求消息是ASCII文本消息.\par
+    信封的格式如``关键字: 参数'', 通常有\verb/From/, \verb/To/, \verb/Subject/, \verb/Date/等关键字.
+\subsection{MIME}
+    针对RFC 822在多媒体传输, 编码等问题, 提出的扩展.\par
+    在报头部分增加若干关键字如\verb/Content-Type/, 并且允许多种编码如\verb/base64/.
+\subsection{请求响应协议} \begin{description}
+        \item[RFC 821] 即SMTP协议, 只处理ASCII数据传输. 没有任何安全措施, 没有密码登陆.
+        \item[POP3] 类似SMTP协议, 允许用户名密码登陆.
+        \item[IMAP4] 允许有选择地接收邮件等功能.
+    \end{description}
+\subsection{电子邮件安全问题}
+    \begin{description}
+        \item[匿名转发] 收件人无法知道真正的发件人
+        \item[邮件伪造] 假冒其他人发送邮件
+        \item[抵赖] 可伪造的都可以抵赖
+        \item[其他] 垃圾邮件和邮件炸弹, 包括邮件病毒等等
+    \end{description}
+\subsection{S/MIME}
+    允许发送 MIME 数据, 提供认证, 加密, 数据完整性和抗抵赖.
+
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{s-mime-enc.jpg}
+    \caption{S/MIME 的加密过程}
+    \label{s-mime-enc}
+    \end{figure}
+
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.8\textwidth]{s-mime-ds.jpg}
+    \caption{S/MIME 的数字签名}
+    \label{s-mime-ds}
+    \end{figure}
+    
+    S/MIME支持透明签名, 即对空消息进行数字签名后发送.
+
 \pagebreak \appendix
- 
+
 \section{实验 IDS}
 \subsection{检测技术}
 \subsubsection{基于异常}
