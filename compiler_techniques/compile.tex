@@ -7,11 +7,14 @@
 \usepackage{tabularx}
 \usepackage{bigfoot}
 \usepackage{fancyvrb}
+\usepackage{graphicx}
 % define new stretchable column types
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{R}{>{\raggedleft\arraybackslash}X}
 \newcolumntype{C}{>{\centering\arraybackslash}X}
 
+\DeclareMathOperator{\Def}{\;\mathbf{Def}\;}
+\DeclareMathOperator{\Ref}{\;\mathbf{Ref}\;}
 
 \title{编译原理}
 
@@ -342,6 +345,105 @@ end.
     \end{tabularx}
     \end{center}
 维护Display
+%TODO
+
+\section{目标代码生成}
+\subsection{数据流分析}
+\subsubsection{概念}
+    假设程序是 TAC 语句的序列. 
+    \begin{description}
+        \item[基本块] 如果将程序按照语句访问组织成图,
+            顺序语句和无条件跳转有且只有一条出边,
+            有条件跳转有两条出边.
+            定义基本块是其中一条极大链, 链内部非首尾节点入度出度都为$1$.
+        \item[流图] 原程序的图进行基本块缩链后, 得到的以基本块为结点的图.
+            程序首条语句所在的流图结点成为流图首结点.
+            一般都去掉首结点不可达的语句.
+        \item[支配节点集] 流图中, 称$u$是$v$的支配节点, 
+            当且仅当任何从流图首结点到$v$的路径都需要经过$u$, 记为$u \mathrm{DOM} v$
+        \item[回边] 若$u \mathrm{DOM} v$且存在边$v\to u$, 则称$v\to u$是一条回边.
+        \item[循环] $v\to u$是一条回边,
+            则定义其对应的自然循环为
+            $ \{v, u\} \cup \{ t \;|\; \exists P\;:\; t\to v, u \not\in P\} $
+    \end{description}
+
+\subsubsection{正向数据流分析}
+\paragraph{定值和引用} 
+    对于语句$I_n \;:\; \mathrm{lhs} = \mathrm{rhs}$,
+    称$\mathrm{lhs}$中变量都被\emph{定值},
+    $\mathrm{rhs}$中所有变量都被\emph{引用},
+    分别记为$I_n \Def \mathrm{lhs}$,
+        $I_n \Ref \mathrm{rhs}$.
+    $I_n$称为$\mathrm{lhs}$的一个定值点.\par
+    同一条语句中, 引用发生在定值之前.\par
+    如果$I_n \Def A \;\land\; I_m \Ref A$,
+    并且存在路径$P\,:\,I_n\to I_m$,
+    满足$\forall I\in P\;:\; \neg(I \Def A)$,
+    则称$A$的定值点$I_n$可达引用点$I_m$.
+\paragraph{基本集合}
+    \begin{itemize}
+        \item $GEN[B]$, 是$B$中定值点的集合, 其可达$B$的出口.
+        \item $KILL[B]$, 是$B$外定值点的集合, 其可达$B$的入口, 但不能达到$B$的出口.
+        \item $IN[B]$, 是可达$B$入口的定值点的集合.
+        \item $OUT[B]$, 是可达$B$出口的定值点的集合.
+    \end{itemize}
+    其中, $GEN$和$KILL$可以直接通过流图得到.
+    计算时可以取$KILL$为所有可能被$B$中定值点覆盖的外部定值点.
+\paragraph{到达-定值分析}
+    数据流方程
+    \begin{align*}
+        IN[B] &= \bigcup_{C \in \mathrm{Prev}[B]} OUT[C]\\
+        OUT[B] &= IN[B]\cup GEN[B] - KILL[B]
+    \end{align*}
+    计算集合约束问题, 即得诸集合的值.
+
+\subsubsection{后向数据流分析}
+\paragraph{活跃变量} 
+    对于语句$I_n$和变量$A$, 如果存在路径$P\;:\;I_n\to I_m$,
+    满足$I_m \Ref A$, 则称$A$在$I_n$处是活跃的.
+\paragraph{基本集合}
+    \begin{itemize}
+        \item $Def[B]$, 是变量的集合, 其在$B$中被引用前被定值
+        \item $LiveUse[B]$, 是变量的集合, 其在$B$中被定值前被引用
+        \item $LiveIn[B]$, 是变量的集合, 其在$B$的入口寸前是活跃的
+        \item $LiveOut[B]$, 是变量的集合, 其在$B$的出口寸后是活跃的
+    \end{itemize}
+    一定有$Def \cap LiveUse = \emptyset$
+\paragraph{活跃变量分析}
+    数据流方程
+    \begin{align*}
+        LiveOut[B] &= \bigcup_{C \in \mathrm{Succ}[B]} LiveIn[B]\\
+        LiveIn[B] &= LiveOut[B] \cup LiveUse[B] - Def[B]
+    \end{align*}
+    计算集合约束问题, 即得诸集合的值.
+
+\subsubsection{其他流信息}
+\paragraph{UD链} 考虑$I_n$点引用了$A$的值, 则定义$A$在$I_n$的引用-定值链为
+    \[\{ I \;|\; I \Def A \land I \text{可达} I_n\}\]\par
+    显然, 如果$A \in Def[B]$, 那么其UD链就是$B$中定值$A$的那条语句.
+    否则, 应有$A \in LiveIn[B]$, 则其UD链就是$IN[B]$中所有$A$的定值点.
+\paragraph{DU链} 考虑$I_n$点定义了$A$的值, 则定义$A$在$I_n$的定值-引用链为
+    \[\{ I \;|\; I \Ref A \land I_n \text{可达} I\}\]\par
+\paragraph{待用信息和活跃信息}
+    TODO
+
+\subsection{基本块的DAG表示}
+\paragraph{约定} 基本块中, 只考虑三种语句, 如图
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{bb-dag.png}
+    \caption{三种语句, 以及其DAG子图表示}
+    \label{bb-dag}
+    \end{figure*}
+    之后, 对于每一个语句. 如果其$\mathrm{rhs}$中, 
+    有变量没有对应的结点, 则为其新建一个结点.\par
+    之后构建过程中, 完成的优化有合并常量,
+    删除冗余运算, 合并已知量, 删除无用赋值.
+
+\subsection{代码生成}
+\subsubsection{指令选择}
+\paragraph{要求} 首先要求正确性, 即意思不改变.
+    其次是代价, 包括减少语句条数, 减少内存访问等等.
 
 %\paragraph{程序内存布局} 程序的虚拟内存空间的典型安排如\\
 %    \begin{center}

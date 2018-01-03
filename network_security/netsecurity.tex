@@ -553,25 +553,135 @@
     
     S/MIME支持透明签名, 即对空消息进行数字签名后发送.
 
-\pagebreak \appendix
+\section{安全电子商务}
+\subsection{安全需求和安全问题}
+    \begin{itemize}
+        \item 资金流动的保密性. 防止第三方截获交易信息
+        \item 支付结算数据的完整性. 防止篡改数据
+        \item 支付双方身份认证.
+        \item 抗抵赖
+        \item 效率等
+    \end{itemize}
+    SET协议基于信用卡, 完成了\begin{itemize}
+        \item 私密性
+        \item 保密性
+        \item 完整性
+        \item 抗抵赖
+    \end{itemize}
+\subsection{SET协议}
+\subsubsection{参与方}
+    \begin{description}
+        \item[持卡人]   意即消费者
+        \item[商家]     事先和收款行建立信任关系
+        \item[发卡行]   消费者持卡的银行
+        \item[收款行]   代替商家与多个发卡行联系, 验证持卡人信息的有效性
+        \item[证书权威] 可信的第三方, 为持卡人, 商家, 收款行提供证书
+        \item[支付网关] 收款行控制, 处理商家的支付报文.
+    \end{description}
+\subsubsection{流程}
+\paragraph{双签名} 交易中有两种信息, 订单相关和支付相关的.
+    只有商家才能看到订单相关的, 只有银行才能看到支付相关的.
+    然而需要对两种信息都签名, 并允许商家和银行验证两种信息的签名.\par
+    双签名的计算即如\[
+        \mathrm{Dual\,Signature} = E_{\mathrm{KR}_C} [H(\mathrm{PIMD} \;\|\; \mathrm{OIMD})] \]
+\paragraph{购买请求}
+    如图
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=\textwidth]{set-1.jpg}
+    \caption{购买请求, Customer端}
+    \label{set-1}
+    \end{figure}
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[height=\textheight, width=\textwidth, keepaspectratio]{set-2.jpg}
+    \caption{购买请求, Merchant端}
+    \label{set-2}
+    \end{figure}
+\clearpage
+\paragraph{支付授权}
+    \begin{enumerate}
+        \item Merchant 给 Acquirer 发送支付授权请求
+        \item Acquirer 确认授权, 给 Issuer 发送划款请求
+    \end{enumerate}
+\paragraph{支付获取}
+    完成转账业务
 
-\section{实验 IDS}
-\subsection{检测技术}
-\subsubsection{基于异常}
-    学习正常流量的特征, 只允许满足特征的包.\par
-    较高误报率, 较低漏报率.
-\subsubsection{基于特征}
-    学习异常流量的特征, 不允许满足特征的包.\par
-    较高漏报率, 较低误报率.
-\subsection{常见攻击}
-\subsubsection{DoS/DDoS攻击}
-    不停访问目标资源, 使得目标资源耗尽.
-\subsubsection{DNS放大攻击}
-    DNS特点: 回复包比请求包大很多. 方法是伪造发送者, 类似DoS.
-\subsection{实验命令}
-\paragraph{离线模式}
-\begin{verbatim} suricate -c CONFIG_PATH -l LOG_PATH -r DETECT_OUTPUT_PATH \end{verbatim}
+\section{入侵技术}
+\subsection{入侵检测}
+\paragraph{审计记录} 包含用户活动记录, 用于检测用户的行为.
+\subsubsection{基于统计的入侵检测}
+    能够防范假冒者, 但是不能防范合法用户.\par
+    \begin{description}
+        \item[阈值检测] 检测一段时间内某用户产生的各种事件.
+            如果, 事件发生次数超过其阈值, 则认为可能存在入侵.\\
+            本身是很粗糙的, 容易误判.
+        \item[轮廓检测] 为每个用户建立一个行为轮廓, 学习其行为模式,
+            检测用户行为模式的异常变化.
+    \end{description}
+\subsubsection{基于规则的入侵检测}
+    基本原理是检测系统中发生的事件,
+    运用先定的规则集确定某一个活动模式是否可疑.
+    其中先定的规则集是专家系统定义的.
+\subsubsection{蜜罐}
+    创建一个正常用户不会访问的蜜罐系统, 
+    引诱攻击者攻击这个没有有用信息的蜜罐系统.\par
+    任何对于蜜罐的访问都是可疑的.
+\subsection{软件入侵}
+    \begin{table}[ht!]
+        \centering
+    \begin{tabularx}{\textwidth}{|C|C|C|C|}
+        \Topline
+                &           病毒 &              蠕虫 &          木马 \\
+        \Midline
+        宿主    &           需要 &            不需要 &          需要 \\
+        \Midline
+        表现形式 &          不以文件 &      独立的文件 &    伪装成其他文件\\
+        \Midline
+        传播方式 &  依赖宿主    &           自主传播 &          依靠用户主动传播\\
+        \Midline
+        危害 &      破坏数据/系统完整性 &   侵占资源 &      留下后门 \\
+        \Midline
+        传播速度 &          快 &            很快    &       慢 (不能自我复制)\\
+        \Bottomline
+    \end{tabularx}
+        \caption{各种恶意软件的特点}
+    \end{table}
+\subsubsection{后门}
+    软件中秘密入口, 可以绕过通常步骤获得权限.
+    控制方式包含本地权限提升, 远程执行程序等.
+\subsubsection{逻辑炸弹}
+    当特定事件发生时, 在被执行制造破坏的代码.
+\subsubsection{特洛伊木马}
+    伪装成正常程序, 欺骗安装和运行, 使攻击者能获得权限.
+    类似后门, 但重点在伪装成正常程序的欺骗性.
+\subsubsection{Zombie}
+    秘密接管Internet上的计算机, 利用这些计算机发送攻击 (常是DoS).
+\subsubsection{病毒}
+    一段可以通过修改自身, 修改其他程序的 程序片段.
+\subsubsection{蠕虫}
+    完整独立的计算机程序, 能够自我复制, 并通过计算机网络传播.
 
+%\pagebreak 
+%\appendix
+%
+%\section{实验 IDS}
+%\subsection{检测技术}
+%\subsubsection{基于异常}
+%    学习正常流量的特征, 只允许满足特征的包.\par
+%    较高误报率, 较低漏报率.
+%\subsubsection{基于特征}
+%    学习异常流量的特征, 不允许满足特征的包.\par
+%    较高漏报率, 较低误报率.
+%\subsection{常见攻击}
+%\subsubsection{DoS/DDoS攻击}
+%    不停访问目标资源, 使得目标资源耗尽.
+%\subsubsection{DNS放大攻击}
+%    DNS特点: 回复包比请求包大很多. 方法是伪造发送者, 类似DoS.
+%\subsection{实验命令}
+%\paragraph{离线模式}
+%\begin{verbatim} suricate -c CONFIG_PATH -l LOG_PATH -r DETECT_OUTPUT_PATH \end{verbatim}
+%
 %\section{实验 Packet Tracer}
 %\subsection{设备使用}
 %\subsubsection{交换机} 位于链路层. 为端到端通信提供不被干扰的链路.
@@ -590,6 +700,7 @@
 %       straight-through:   PC - switch
 %       cross-over:         PC - PC, switch - switch
 %   switch 2960: both straight-through / cross-over are ok to use
+
 
 \end{document}
 
