@@ -464,13 +464,67 @@
 % \section{网络安全协议}
 %     协议基本要素: 层次 (OSI 7层中哪一层), 格式, 行为 (亦称控制).
 
-\section{IPsec}
+\section{IP层级安全}
+\subsection{IPsec}
     与 IP 在同一层. 功能 \begin{description}
         \item[认证] 确认包的发送者真实, 包不被篡改
         \item[加密] 流量管理
         \item[密钥管理] 密钥的安全交换
     \end{description}
-\paragraph{原理} IPsec的可以有三种报头: 认证 AH, 加密 ESP, 加密认证 ESP.
+\subsubsection{SA}
+\paragraph{背景} 假设 Alice 希望给 Bob 发送数据.
+    无论加密 (对称加密) 还是认证 (HMAC\footnote), 他们都需要一个共有的密钥.
+    IPsec讨论中假设这个双方已有这个共有密钥了.
+\paragraph{SPD} 安全策略数据库, 其过滤所有IP流量.
+    并且对于每个IP包, 其指定对于此IP包的处理, 
+    是丢弃\verb/DISCARD/, 直接通过IP发送\verb/BYPASS/,
+    还是通过IPsec\verb/PROTECT/.
+    如果指定是\verb/PROTECT/, 它还需指定是\verb/ESP/还是\verb/AH/,
+    使用传输模式还是隧道模式,
+    之后或者利用IKE生成一个SA记录到SAD中, 或者交由SAD处理.
+\paragraph{SA内容} Bob 可能有很多个入境连接都使用 IPsec,
+    因此每个连接都需要一个标识, 用来让 Bob 确定这个连接的参数,
+    如哈希算法, 公共密钥等. IPsec中此标识实现为 SPI, 是一个 32 位的整数.\par
+    Bob本地有一个 SAD, 对于每一个有效的 SPI 在 SAD 中都有对应的SA (包含SPI, 使用ESP还是AH, 目标IP地址),
+    以及源地址, SA记录等等.
+\paragraph{传输模式和隧道模式}
+    对于加密或认证, 如果针对的是IP载荷 (即TCP头加载荷), 则成为传输模式, 用于端到端的传输. 通常就在主机上实现.
+    如果针对的整个IP包, 则成为隧道模式, 用于网络上构建VPN. 通常在防火墙或者路由器上实现.
+\paragraph{原理} IPsec有两种协议, 有AH, 用于认证; 以及ESP, 用于加密和可选的认证. 参见如图\par
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1.0\textwidth]{ah-transport.png}
+    \caption{传输模式的AH}
+    \label{ah-transport}
+    \end{figure}
+
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1.0\textwidth]{ah-tunnel.png}
+    \caption{隧道模式的AH}
+    \label{ah-tunnel}
+    \end{figure}
+
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1.0\textwidth]{esp-transport.png}
+    \caption{传输模式的ESP}
+    \label{esp-transport}
+    \end{figure}
+
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1.0\textwidth]{esp-tunnel.png}
+    \caption{隧道模式的ESP}
+    \label{esp-tunnel}
+    \end{figure}
+\clearpage
+
+\subsection{IKE}
+    IKE的目的是, 在不安全的互联网上交换密钥,
+    使得通信双方能得到一个共有的公共密钥, 用于对称加密或签名.
+\paragraph{朴素DH的问题} 朴素DH容易受到中间人攻击, 
+    即欺骗者对 Alice 声称自己是 Bob, 对 Bob 声称自己是 Alice. 解决需要提供Alice和Bob的身份验证.
 
 \section{SSL}
 \subsection{特点}
@@ -598,6 +652,7 @@
     \caption{购买请求, Merchant端}
     \label{set-2}
     \end{figure}
+
 \clearpage
 \paragraph{支付授权}
     \begin{enumerate}
