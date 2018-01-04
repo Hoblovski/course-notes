@@ -35,6 +35,11 @@
 \newcolumntype{R}{>{\raggedleft\arraybackslash}X}
 \newcolumntype{C}{>{\centering\arraybackslash}X}
 
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{2.00in}
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
 
 \title{计算机网络安全技术}
 
@@ -62,6 +67,7 @@
 
 \subsection{置换密码}
     $D(m) = \sigma m$, 要求$\mathcal{M} = \Sigma^L$, $\sigma$是$[0, L)$上的置换.
+    代换密码变换的是每个位置上的字母, 而置换密码变换的是消息中各个字母的位置.
 \paragraph{攻击} 频率分析, 包括多元组频率分析.
 
 \subsection{对称密码}
@@ -133,7 +139,7 @@
 
     \begin{figure}[ht!]
         \centering
-        \includegraphics[width=0.5\textwidth]{s-des-keygen.jpg}
+        \includegraphics[keepaspectratio,height=0.25\textheight,width=1.0\textwidth]{s-des-keygen.jpg}
         \caption{S-DES 生成密钥}
         \label{s-des-keygen}
     \end{figure}
@@ -157,48 +163,18 @@
     \]
     \begin{figure}[ht!]
         \centering
-        \includegraphics[width=0.5\textwidth]{s-des-enc.jpg}
+        \includegraphics[height=0.5\textheight,width=0.8\textwidth,keepaspectratio]{s-des-enc.jpg}
         \caption{S-DES 加密}
         \label{s-des-enc}
     \end{figure}
 
     \begin{figure}[ht!]
         \centering
-        \includegraphics[width=0.5\textwidth]{s-des-fk.jpg}
+        \includegraphics[height=0.5\textheight,width=0.5\textwidth,keepaspectratio]{s-des-fk.jpg}
         \caption{S-DES 的 $F$函数}
         \label{s-des-fk}
     \end{figure}
-%g
-%g\paragraph{次密钥加密}
-%g    有如下元素 \begin{enumerate}
-%g        \item 文字$M = \langle M_0, \ldots M_9 \rangle$
-%g        \item 密钥$K = \langle K_0, \ldots K_9 \rangle$
-%g        \item $\sigma_i$是已知的8位置换
-%g        \item $\sigma_{SW}$是已知的8位置换
-%g        \item $f_{K_i}$是8位到8位的函数, 由次密钥$K_i$参数化
-%g        \item $\sigma{LS, l}$是一个已知的10位置换
-%g    \end{enumerate}
-%g    则有 \begin{align*}
-%g        D(M) &= \sigma_i^{-1} ( f_{K_2} ( \sigma_{SW} ( f_{K_1} ( \sigma_i (M) ) ) ) ) \\
-%g        E(C) &= \sigma_i^{-1} ( f_{K_1} ( \sigma_{SW} ( f_{K_2} ( \sigma_i (C) ) ) ) )
-%g    \end{align*}
-%g    其中$f_{K_i}(X)$的定义如下.\par
-%g    有如下元素 \begin{enumerate}
-%g        \item $EP$是已知的4位到8位的函数
-%g        \item $S0, S1$是已知的4位到2位的函数
-%g        \item $\sigma_4$是4位置换
-%g    \end{enumerate}
-%g    则算法如下 (以下特别使用大段顺序) \begin{enumerate}
-%g        \item $t = EP(X_{3 \ldots 0}) \oplus K_i$
-%g        \item $h = X_{7 \ldots 4} \oplus \sigma_4(S0(t_{7 \ldots 4}) , S1(t_{3 \ldots 0}))$
-%g        \item $f_{K_i}(X) = (h, X_{3 \ldots 0})$
-%g    \end{enumerate}
-%g\paragraph{计算$K_1, K_2$}
-%g    有如下元素 \begin{enumerate}
-%g    \end{enumerate}
 
-
-\clearpage
 \subsection{公钥密码}
     公钥密码即非对称密码.
     其中加密和解密使用的是不同的密钥, 称为公钥和私钥.
@@ -429,12 +405,13 @@
         \item[方向控制] 内到外 / 外到内
         \item[用户控制] 基于用户的身份, 如 VPN
         \item[行为控制] 基于用户的行为进行控制, 如垃圾邮件过滤
-    \end{description}基于分层, 有\begin{description}
+    \end{description}\par
+    基于分层, 有\begin{description}
         \item[网络层] 包过滤技术.\\
             根据定义好的过滤规则, 包含IP地址, 端口和协议等, 审查每个数据包. 性能较高, 但控制能力不强.\\
             如路由器中的ACL.
         \item[网络层] 地址转换.\\
-            完成转发和地址转换. 不提供额外的安全性，但是可以隐蔽内部网络，节省地址空间\\
+            完成转发和地址转换. 不提供额外的安全性，但是可以隐蔽内部网络，节省地址空间
         \item[传输层] 电路层网关.\\
             检查包所属的会话, 即是不是属于客户端和服务器的某一个链接, 不检查协议和内容.
             不支持无连接的UDP, 性能开销较大.
@@ -476,7 +453,7 @@
     无论加密 (对称加密) 还是认证 (HMAC\footnote), 他们都需要一个共有的密钥.
     IPsec讨论中假设这个双方已有这个共有密钥了.
 \paragraph{SPD} 安全策略数据库, 其过滤所有IP流量.
-    并且对于每个IP包, 其指定对于此IP包的处理, 
+    并且对于每个IP包, 其指定对于此IP包的处理,
     是丢弃\verb/DISCARD/, 直接通过IP发送\verb/BYPASS/,
     还是通过IPsec\verb/PROTECT/.
     如果指定是\verb/PROTECT/, 它还需指定是\verb/ESP/还是\verb/AH/,
@@ -521,10 +498,64 @@
 \clearpage
 
 \subsection{IKE}
-    IKE的目的是, 在不安全的互联网上交换密钥,
+    IKE位于应用层 (UDP端口500), 目的是在不安全的互联网上交换密钥,
     使得通信双方能得到一个共有的公共密钥, 用于对称加密或签名.
-\paragraph{朴素DH的问题} 朴素DH容易受到中间人攻击, 
+    此外IKE还需要和SPD, SAD协同工作, 后两者可能请求IKE协商SA.
+    \par
+    可以采用传输模式端对端地工作, 也可以利用隧道模式在安全网关之间工作.\par
+
+\paragraph{朴素DH的问题} 朴素DH容易受到中间人攻击,
     即欺骗者对 Alice 声称自己是 Bob, 对 Bob 声称自己是 Alice. 解决需要提供Alice和Bob的身份验证.
+\subsubsection{第一阶段}
+    此阶段协商IKE SA. 有主模式\verb/main mode/和快速模式\verb/aggressive mode/.\par
+    双方认证可以有多种方法, 此处以签名认证为例, 摘抄rfc如下\begin{verbatim}
+    Phase 1 is where the two ISAKMP peers establish a secure,
+       authenticated channel with which to communicate.
+5.1 IKE Phase 1 Authenticated With Signatures
+    Main Mode with signature authentication is described as follows.
+    The first two messages negotiate policy.
+    The next two exchange Diffie-Hellman public values
+        and ancillary data (e.g.  nonces) necessary for the exchange;
+    The last two messages authenticate the Diffie-Hellman Exchange.
+
+        Initiator                          Responder
+        -----------                        -----------
+        HDR, SA                     -->
+                                    <--    HDR, SA
+        HDR, KE, Ni                 -->
+                                    <--    HDR, KE, Nr
+        HDR*, IDii, [ CERT, ] SIG_I -->
+                                    <--    HDR*, IDir, [ CERT, ] SIG_R
+
+    Aggressive mode with signatures in conjunction with ISAKMP is described as follows:
+    The first two messages negotiate policy, exchange Diffie-Hellman public values
+        and ancillary data necessary for the exchange, and identities.
+    In addition the second message authenticates the responder.
+    The third message authenticates the initiator
+    and provides a proof of participation in the exchange.
+
+        Initiator                          Responder
+        -----------                        -----------
+        HDR, SA, KE, Ni, IDii       -->
+                                    <--    HDR, SA, KE, Nr, IDir,
+                                                [ CERT, ] SIG_R
+        HDR, [ CERT, ] SIG_I        -->
+
+    In both modes, the signed data, SIG_I or SIG_R, is the result of the
+    negotiated digital signature algorithm applied to HASH_I or HASH_R
+    respectively.
+
+    c.f.
+        HDR:    ISAKMP header;  HDR* denotes payloads encrypted.
+        SA:     an SA negotiation payload with one or more proposals.
+        KE:     public information exchanged in a Diffie-Hellman exchange.
+        Nx:     nonce payload;  
+        IDx:    identification payload, e.g. IP address
+        SIG_x:  necessary info (g^xy, SAx, IDx, Nx etc) signed by x.
+\end{verbatim}
+\subsubsection{第二阶段}
+    协商如IPsec的加密算法, 哈希算法, DH组等等参数.
+    使用快速模式\verb/Quick mode/, 需要三次消息交换.
 
 \section{SSL}
 \subsection{特点}
@@ -593,18 +624,18 @@
 
     \begin{figure}[ht!]
     \centering
-    \includegraphics[width=0.8\textwidth]{s-mime-enc.jpg}
+    \includegraphics[height=0.5\textheight,width=0.8\textwidth,keepaspectratio]{s-mime-enc.jpg}
     \caption{S/MIME 的加密过程}
     \label{s-mime-enc}
     \end{figure}
 
     \begin{figure}[ht!]
     \centering
-    \includegraphics[width=0.8\textwidth]{s-mime-ds.jpg}
+    \includegraphics[height=0.4\textheight,width=0.8\textwidth,keepaspectratio]{s-mime-ds.jpg}
     \caption{S/MIME 的数字签名}
     \label{s-mime-ds}
     \end{figure}
-    
+
     S/MIME支持透明签名, 即对空消息进行数字签名后发送.
 
 \section{安全电子商务}
@@ -679,7 +710,7 @@
     运用先定的规则集确定某一个活动模式是否可疑.
     其中先定的规则集是专家系统定义的.
 \subsubsection{蜜罐}
-    创建一个正常用户不会访问的蜜罐系统, 
+    创建一个正常用户不会访问的蜜罐系统,
     引诱攻击者攻击这个没有有用信息的蜜罐系统.\par
     任何对于蜜罐的访问都是可疑的.
 \subsection{软件入侵}
@@ -717,7 +748,7 @@
 \subsubsection{蠕虫}
     完整独立的计算机程序, 能够自我复制, 并通过计算机网络传播.
 
-%\pagebreak 
+%\pagebreak
 %\appendix
 %
 %\section{实验 IDS}
