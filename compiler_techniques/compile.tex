@@ -344,9 +344,26 @@ end.
         \\\cline{2-3}
     \end{tabularx}
     \end{center}
-维护Display
-%TODO
-
+\paragraph{维护Display}
+    考虑到每次对Display表的修改至多一项,
+    所以可以在栈帧中直接保存被替换的Display表项.
+\paragraph{静态动态表方法}
+    除了最初的\verb/main/外每个函数的栈帧都额外保存两个指针, 叫静态链和动态链.
+    某函数的动态链指向本次运行中调用该函数的函数栈帧;
+    静态链指向本次运行栈中其父函数, 并且是在该函数栈帧之前的第一个父函数.
+\subsection{面向对象系统的实现}
+\subsubsection{对象的存储组织}
+\paragraph{朴素方法}
+    当前对象的所有特性,
+    包括继承的特性 (域和方法),
+    都复制到对象存储区内.
+\paragraph{类存储} 
+    将每个类的结构的描述保存在类的存储空间, 使用父类指针完成继承.
+    之后每个对象除了自己的成员数据外, 只需要访问自己类的结构描述得到方法.
+\paragraph{虚函数表}
+    将每个类的结构的描述保存在类的存储空间, 但是将父类方法也直接保存到自己类的描述.
+    之后每个对象除了自己的成员数据外, 只需要访问自己类的结构描述得到方法.
+    
 \section{目标代码生成}
 \subsection{数据流分析}
 \subsubsection{概念}
@@ -425,7 +442,15 @@ end.
 \paragraph{DU链} 考虑$I_n$点定义了$A$的值, 则定义$A$在$I_n$的定值-引用链为
     \[\{ I \;|\; I \Ref A \land I_n \text{可达} I\}\]\par
 \paragraph{待用信息和活跃信息}
-    TODO
+    待用信息追踪变量在一个基本块中下一次引用的位置. 考虑加上待用信息注解,
+    则需要对于基本块中每个语句其中每个变量, 找到该基本块中其下一次被引用的位置,
+    然后标记在右上角标. 位置用语句的编号表示, 编号从1开始, 如果没有下一次引用则置为0.\par
+    
+    活跃信息追踪变量的一个值的生命周期. 考虑加上活跃信息注解,
+    即对基本块中每个语句中每个变量加一个右上角标, 为L或者F.
+    如果是L, 表示此变量还会在被定值前被引用;
+    为F则表示此变量的这个值已经不会被引用了.
+    初始条件可以从基本块的$LiveOut$信息得到.
 
 \subsection{基本块的DAG表示}
 \paragraph{约定} 基本块中, 只考虑三种语句, 如图
@@ -439,11 +464,34 @@ end.
     有变量没有对应的结点, 则为其新建一个结点.\par
     之后构建过程中, 完成的优化有合并常量,
     删除冗余运算, 合并已知量, 删除无用赋值.
+    例如下图.
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{bb-dag-ex.png}
+    \caption{右边的基本块生成左边的DAG}
+    \label{bb-dag-ex}
+    \end{figure*}
 
 \subsection{代码生成}
 \subsubsection{指令选择}
 \paragraph{要求} 首先要求正确性, 即意思不改变.
     其次是代价, 包括减少语句条数, 减少内存访问等等.
+    具体实现通过AVALUE和RVALUE来完成, 即及时维护一个寄存器-变量的一对多关系.
+\subsubsection{Ershov数} 一个表达式的Ershov数定义为其求值所需最少多少寄存器.\par
+    可以递归地计算, 考虑表达式树(DAG亦可)$T$, 左右儿子是$L$, $R$. 有\[
+        \text{Ershov}(T) = \begin{cases}
+            1 & L = R = \text{NULL}\\
+            \text{Ershov}(R) & L = \text{NULL}\\
+            \text{Ershov}(L) & R = \text{NULL}\\
+            \text{Ershov}(L) + 1 & \text{Ershov}(L) = \text{Ershov}(R)\\
+            max\{\text{Ershov}(L), \text{Ershov}(R)\} & \text{Ershov}(L) \neq \text{Ershov}(R)\\
+        \end{cases}\]
+    由Ershov数的定义容易得到求值算法 (Sethi-Ullman算法)
+\subsubsection{寄存器分配}
+    即将伪寄存器映射到物理寄存器的方法, 不考虑到泄露到内存的情况.
+    采用寄存器相干图. 原理是, 如果在$A$的定值点寸后$B$是活跃的,
+    则$A$, $B$应当分配到不同的物理存储器. 于是将伪寄存器作为结点建图,
+    求图色数就是程序最少使用的物理存储器.
 
 %\paragraph{程序内存布局} 程序的虚拟内存空间的典型安排如\\
 %    \begin{center}
