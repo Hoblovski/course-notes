@@ -8,6 +8,8 @@
 \usepackage{bigfoot}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{placeins}       % \FloatBarrier
 % define new stretchable column types
 \newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newcolumntype{R}{>{\raggedleft\arraybackslash}X}
@@ -15,6 +17,22 @@
 
 \DeclareMathOperator{\Def}{\;\mathbf{Def}\;}
 \DeclareMathOperator{\Ref}{\;\mathbf{Ref}\;}
+
+% for simulating booktabs rules; so they work with vertical lines
+\newlength{\Oldarrayrulewidth}
+\newcommand{\Cline}[2]{
+  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}\cline{#2}
+  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
+\newcommand{\Hline}[1]{
+  \noalign{\global\setlength{\Oldarrayrulewidth}{\arrayrulewidth}}
+  \noalign{\global\setlength{\arrayrulewidth}{#1}}\hline
+  \noalign{\global\setlength{\arrayrulewidth}{\Oldarrayrulewidth}}}
+\newcommand{\Topline}{\Hline{0.08em}}
+\newcommand{\Bottomline}{\Hline{0.08em}}
+\newcommand{\Midline}{\Hline{0.05em}}
+\newcommand{\CMidLine}[1]{\Cline{0.05em}{#1}}
+
 
 \title{编译原理}
 
@@ -82,7 +100,7 @@
 \subsubsection{First和Follow的计算}
 \paragraph{First的计算} 考虑计算$First(\alpha)$, 设$\alpha = X_1 X_2 \ldots X_k$.\par
     若$X_1\ldots X_{l-1}$可空, $X_l$不可空 (显然终结符不可空), 有\[
-        First(\alpha) = \cup_{1 \le i \le l} First(X_i) - \{\epsilon\}\]\par
+        First(\alpha) = \cup_{1 \le i \le l} \left( First(X_i) - \{\epsilon\} \right) \]\par
     若$X_1 \ldots X_k$都可空, 则\[
         First(\alpha) = \cup_{1 \le i \le k} First(X_i)\]\par
     非终结符$First(A) = \cup_{\beta\;:\; A \to \beta} First(\beta)$.\par
@@ -98,13 +116,13 @@
     {
         switch (lookahead) {
             case c: 
-                // B -> c A d
+                // B -> c A d,      First(c A d) = {c}
                 match_token(c); 
                 parse_A()
                 match_token(d);
                 break;
             case b: 
-                // B -> epsilon
+                // B -> epsilon,    Follow(B) = {b}
                 break;
             default:
                 // no production matches here
@@ -119,7 +137,7 @@
         \item $X \in V$, 设$M[X, a] = X \to \alpha$, 则$X$出栈, $\alpha$从右到左入栈
     \end{itemize}
 \subsubsection{语法变换}
-    LL(1)语言一般要求不包含左递归, 不包含公共左因子.
+    通过消除左递归和公共左公因子, 能将很多非LL(1)语言转换为LL(1)语言, 如$S \to Sa | b$.
 \paragraph{去除直接左递归} 原为\begin{align*}
         A & \to A \alpha_1 \,|\, A \alpha_2 \,|\, \ldots \,|\, \beta_1 \,|\, \beta_2 \,|\, \ldots
     \end{align*}改写为\begin{align*}
@@ -136,6 +154,107 @@ for i = 1 to n
     消除A_i的直接递归
 \end{verbatim}
 \paragraph{消除左公因子} 直接将左公因子作为新的符号即可.
+\subsection{Bottom-up parsing}
+    从输入串开始, 不停将串中一个子串规约成一个非终结符, 直到规约成$S$.
+\paragraph{不确定性} 有2个不确定性
+    \begin{enumerate}
+        \item 选择哪个子串
+        \item 选择哪个产生式, 如果有多个产生式的右边一样
+    \end{enumerate}
+    采用一类称为LR分析的解决此问题.
+    每次都选择``句柄'', 选择的产生式通过LR分析表确定.
+\subsubsection{概念}
+    以下是语法本身的概念
+    \begin{description}
+        \item[短语] 如果$S\Rightarrow^* \alpha A \beta$且$A \Rightarrow^+ \gamma$,
+                则称$\gamma$是$\alpha A \beta$中$A$的短语.\\
+                在$\alpha A \beta$确定的情况下, 可以称$\gamma$是$A$的短语.
+                这时在$S \Rightarrow^* \alpha \gamma \beta$的分析树中,
+                $\gamma$是$A$的子树的叶遍历, 并且要求$A$本身不能是叶子.
+        \item[直接短语] $S\Rightarrow^* \alpha A \beta$且$A \Rightarrow \gamma$,
+                则称$\gamma$是$\alpha A \beta$中$A$的直接短语.\\
+                直接短语就是可以一步推出的短语.
+                在$\alpha \gamma \beta$的分析树中, 对应的是$A$所有儿子都是叶子的情况.
+        \item[句柄] $S \Rightarrow^* \alpha A w$且$A \Rightarrow \beta$,
+                则称$\beta$是$\alpha A w$中$A$的句柄.\par
+                句柄就是从左到右第一个出现的直接短语.
+                可以理解为``最右推导''反过来就是``最左规约''.
+    \end{description}
+\subsubsection{通用框架}
+    所有LR分析, 分析框架是一样的, 只有分析表是不一样的.\par
+    基本分析方法就是基于一个栈, 从左到右扫描输入串,
+    每次根据当前控制状态, 栈中内容 (不限于栈顶), 下一个输入符号来决定动作, 并且转移到新的控制状态.\par
+    所有LR分析都有一个$action[i, a]$表
+        \[\begin{array}{ll}
+            \Topline
+            action[i, a] & \text{含义}\\
+            \Midline
+            \text{shift}\,j & \text{将}a\text{移入栈中, 状态变为}j \\
+            \text{reduce}\,A\to\alpha & \text{此时栈顶应为}\alpha\text{, 规约栈顶. 之后}A\text{入栈, 状态变为}goto[i, A] \\
+            \text{success} & \text{分析成功, 即将原输入串规约成了}S \\
+            \text{error} & \text{出错} \\
+            \Bottomline
+        \end{array}\]\par
+    所有LR分析都有一个$goto[i, A]$表.
+    $goto[i, A] = j$表示当前状态为$i$,
+    一个非终结符$A$入栈后, 那么状态变为$j$.\par
+    所有LR分析都是用增广文法, 即加入产生式 $S' \to S$的文法$G[S']$. $S' \to .S$对应的状态为初状态.
+
+\subsubsection{LR(0)分析表}
+\paragraph{item} 加点的产生式. 为了方便认识用方括号括起.
+\paragraph{closure} 考虑item间的关系$R$, 为$[A \to \alpha . B \beta] \;R\; [B \to .\gamma]$.
+    定义$closure(I)$等于$I$在关系$R$的传递闭包, $I$是item集合.
+\paragraph{go} $I \text{ is closure},\;X \in V \cup T$\[
+    go(I, X) = closure(\{[A \to \alpha X .\beta] \;|\; [A \to \alpha . X \beta] \in I\})\]
+\paragraph{action} \[action[i, a] = \begin{cases}
+    \text{shift}\; j          & J = go(I, a)\\
+    \text{reduce}\; A\to\beta & [A \to \beta.] \in I\\
+    \text{accept}             & [S' \to S.] \in I\\
+    \text{error}              & \text{otherwise}
+    \end{cases}\]
+\paragraph{goto} \[goto[i, A] = j \quad J = go(I, A)\]
+
+\subsubsection{SLR(1)分析表}
+    基本同LR(0), 但是完成reduce的条件变得更精确.\par
+    原理: 完成规约$A\to\alpha$时, 下一个输入$a$应当满足$a \in Follow(A)$.
+\paragraph{action} \[action[i, a] = \begin{cases}
+    \text{shift}\; j          & J = go(I, a)\\
+    \text{reduce}\; A\to\beta & [A \to \beta.] \in I \land a \in Follow(A)\\
+    \text{accept}             & [S' \to S.] \in I\\
+    \text{error}              & \text{otherwise}
+    \end{cases}\]
+
+\subsubsection{LR(1)分析表}
+\paragraph{item} 之前是一遇到可规约的$A \to \alpha.$就规约 (规则2.),
+    但是不一定是这样 (前看$\alpha$之后一个符号得到的信息被忽略了).\par
+    item的表示是$[A \to \alpha . \beta, a],\quad a \in T$. 如果$\beta \neq \epsilon$, 那么一切和SLR一样.\par
+    如果$\beta = \epsilon$, 那么当且仅当$a \in Follow(A)$时, 才进行规约.
+\paragraph{closure} $[A \to \alpha . B \beta, a]  \; \mathbf{R} \;  [B \to .\gamma, b] \quad b \in \mathbf{FIRST}(\beta a)$
+    如上关系的闭包.
+\paragraph{构造go} $go(I, X) = closure([A \to \alpha X. \beta] \,|\, [A \to \alpha . X \beta] \in I)$
+\paragraph{构造item集} 从$closure([S' \to .S, \$])$按照$go$拓展得图.
+\paragraph{初态} $I_0 = closure(\{[S' \to .S,\, \$]\})$
+\paragraph{action} 更精确的描述了完成reduce的条件
+%    原理: 完成规约$A\to\alpha$时, 下一个输入$a$应当满足$a \in Follow(A\to\alpha)$,
+%        即各个产生式之后能跟的符号是不同的. 如$S \to Ab;\quad A \to Aa\;|\;\epsilon$.
+%        产生式$A\to Aa$之后只能跟$b$, 
+%
+%$
+%S ::= A a | b A c | d c | b d a
+%
+%A ::= d
+%$
+% TODO
+    \[ action[I, a] = \begin{cases}
+        \text{shift}\; go(I, a)    & [A \to \alpha .a \beta,\, b] \in I\\
+        \text{reduce}\; A\to\alpha & [A \to \alpha.,\, a] \in I,\, A\to\alpha \neq S'\to S\\
+        \text{accept}              & [S' \to S., \$] \in I\\
+        \text{error}               & \text{otherwise}\end{cases} \]
+
+\subsubsection{LALR(1)}
+    和LR(0)一样状态数目.
+    其余方法和LR(1)相同.
+\paragraph{合并LR(1)同芯状态} 同芯: $[A\to\alpha.\beta, a]$中$A\to\alpha.\beta$相同
 
 
 \section{符号表}
@@ -178,86 +297,104 @@ for i = 1 to n
 \subsubsection{基本概念}
 \paragraph{翻译模式} 类似属性文法, 但是允许语法动作出现在产生式中任何地方, 表示匹配到该处时即刻执行该语法动作.
 \paragraph{消除左递归} 讨论消除左递归时, 保持翻译动作等价. 以直接左递归为例\begin{align*}
-        A & \to A_1 \alpha \; \{A.a = f(A_1.a, \alpha.a)\}\\
-        A & \to \beta  \; \{A.a = g(\beta.a)\}
+        A & \to A_1 \alpha \; \{ A.s = f(A_1.s, \alpha.s)\}\\
+        A & \to \beta  \;     \{ A.s = g(\beta.s)\}
     \end{align*}
-    % TODO
     按照消除直接左递归的方法变换之后, 变为 \begin{align*}
-        A & \to \beta \; \{ R.i = g(\beta.a) \} \; R \; \{A.a = f(R.s)\}\\
-        R & \to \epsilon  \; \{R.a = g(\beta.a)\}\\
-        R & \to \alpha \; \{\,\}\; R_1  \; \{\}
+        A & \to \beta \;     \{ R.i = g(\beta.s) \} \; R \;             \{A.a = f(R.s)\}\\
+        R & \to \epsilon  \; \{ R.s = R.i\}\\
+        R & \to \alpha \;    \{ R_1.i = f(R.i, \alpha.s) \}\; R_1  \;   \{ R.s = R_1.s \}
     \end{align*}
-\subsubsection{自上而下计算} 类似\ref{onepass-l-attr-grammar}, 但是计算属性在$\mathbf{parse(A)}$过程中进行.
+    可以认为$R.i$中保存了原来式子中所有其左便的所有信息.
+\subsubsection{自上而下计算}
+    类似\ref{onepass-l-attr-grammar}, 但是计算属性在$\mathbf{parse(A)}$过程中进行.
+\subsubsection{自下而上计算}
+    使用从下而上分析方法, 将综合属性和符号一起存储在栈中.
+    这样有一个问题, 无法访问继承属性, 因为需要在确定非终结符前完成语法动作.
+    因此需要提供一种方法实现继承属性的访问.\par
+    可以将语法稍作变换, 添加若干空非终结符,
+    由它们完成中间的语法规则的计算, 
+    使得产生式中间只有复写规则$X_i.i = X_{i-1}.s$.\par
+    这样可以沿着复写规则, 对于继承属性$X_i.i$,
+    最终找到综合属性$X_j.s$,
+    满足$j<i$而且两者是相等的 (根据复写规则).
+    这时因为$j < i$, 所以执行$X_i$的分析时$X_j$一定在栈中.
+    \begin{figure}%
+        \centering
+        \subfloat[最初的翻译模式]{{\includegraphics[width=0.95\textwidth]{trans-ex-1.png}}}%
+        \\
+        \subfloat[转换为适合自下而上的翻译模式]{{\includegraphics[width=0.95\textwidth]{trans-ex-2.png}}}%
+        \\
+        \subfloat[规约时代码片段]{{\includegraphics[width=0.95\textwidth]{trans-ex-3.png}}}%
+        \caption{自下而上计算的例子}%
+    \end{figure}
+    \FloatBarrier
 
-\pagebreak
-\section{Bottom-up parsing}
-\paragraph{其他} 所有LR分析, driver是一样的, 只有parser table是不一样的.
-\paragraph{item} 定义为加点的产生式.
-\paragraph{closure} $I$: item集. 定义$closure(I)$等于$[A \to \alpha . B \beta] \;R\; [B \to .\gamma],\quad B \to \gamma$的关系闭包.
-\paragraph{augmented grammar} 加入产生式 $S' \to S$, $S' \to .S$为状态机的初状态.
-\paragraph{goto} $I \text{ is closure},\;X \in V \cup T$\[
-    goto(I, X) = closure(\{[A \to \alpha X .\beta \;|\; [A \to \alpha . X \beta] \in I\})\]
-\subsection{LR(0)}
-    SLR自动机: 状态为$\{ clusure(I) \}$, 转移函数为$goto(I, X)$.
-    其他的parsing method在SLR上面加入了前看信息.\par
-    之后记$I$就是$closure$了.
-\paragraph{action} \begin{align*}action(I, a)&\\
-    &= \text{shift}\; j \qquad \{J\} = goto(I, a)\\
-    &| \text{reduce}\; A\to\beta \qquad [A \to \beta.] \in I\\
-    &| \text{accept}\\
-    &| \text{error}\end{align*}
-\paragraph{建立LR表goto, action} closure域, goto直接由定义计算即可.\par
-    对于action, 有如下规则\begin{enumerate}
-        \item $[A \to \alpha .a \beta] \in I,\quad action(I, a) = \text{shift}\; goto(I, a)$
-        \item $[A \to \alpha.] \in I$则$\forall a \;:\; action(I, a) = \text{reduce}\;A\to\alpha$
-        \item $[S' \to S.] \in I$则$action(I, \$) = \text{success}$
-        \item 以上规则没有指定的$action(I, a) = \text{error}$
-        \item 以上规则冲突时, 则称语法不是SLR(1)的
-    \end{enumerate}
+\section{中间代码生成}
+\subsection{静态语义分析}
+    包含类型检查, 作用域分析, 控制流检查等. 通过翻译模式实现.
+\subsection{中间代码生成}
+    课程中只考虑三地址码的生成.
+\subsubsection{布尔表达式的翻译}
+\paragraph{直接翻译} 不处理短路特性. 相当于普通表达式的计算.
+\paragraph{L-属性文法}
+    每个表达式$E$有继承属性$E.true$和$E.false$, 这些属性分别都是标号. 具体如图.
+    实现如图\ref{bool-1}
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{bool-1.png}
+    \caption{L-属性文法的布尔短路翻译}
+    \label{bool-1}
+    \end{figure*}
+    如果翻译循环等, 还需要加入$S.next$等.
+\paragraph{S-属性文法}
+    将标号作为综合属性, 待顶层布尔表达式翻译完后,
+    将所有下层表达式中未知的标号回填. 称为拉链方法 (backpatching).\par
+    表达式$E$有两种综合属性$E.truelist$和$E.falselist$,
+    包含未确定的, 但是知道是跳转到真还是假的标号.\par
+    还包含函数
+    \begin{table}[ht!]
+        \centering
+        \begin{tabularx}{\textwidth}{cL}
+            \Topline
+            函数名 & 行为\\
+            \Midline
+            $makelist(initial\_entry)\;\to list$ & 创建一个待回填的表\\
+            $merge(list, list)\;\to list$ & 返回两个表的合并\\
+            $backpatch(list, lbl)$ & 确定$list$中的标号为$lbl$\\
+            \Bottomline
+        \end{tabularx}
+        \caption{拉链方法的函数}
+    \end{table}
+    实现如图\ref{bool-2}
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{bool-2.png}
+    \caption{S-属性文法的布尔短路翻译}
+    \label{bool-2}
+    \end{figure*}
 
-\subsection{SLR(1)}
-    基本同LR(0)
-\paragraph{action}
-    $action(I, a) = \text{reduce} A \to \alpha \qquad A \to \alpha. \in I,\; a \in Follow(A)$
+\subsubsection{控制流的翻译}
+\paragraph{L-属性文法}
+    如图\ref{ctrlflow-1},
+    循环通过继承属性$S.next$实现, break语句通过继承属性$S.break$传递.
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{ctrlflow-1.png}
+    \caption{L-属性文法的控制流翻译}
+    \label{ctrlflow-1}
+    \end{figure*}
 
-\subsection{LR(1)}
-\paragraph{item} 之前是一遇到可规约的$A \to \alpha.$就规约 (规则2.),
-    但是不一定是这样 (前看$\alpha$之后一个符号得到的信息被忽略了).\par
-    item的表示是$[A \to \alpha . \beta, a],\quad a \in T$. 如果$\beta \neq \epsilon$, 那么一切和SLR一样.\par
-    如果$\beta = \epsilon$, 那么当且仅当$a \in Follow(A)$时, 才进行规约.
-\paragraph{closure} $[A \to \alpha . B \beta, a]  \; \mathbf{R} \;  [B \to .\gamma, b] \quad b \in \mathbf{FIRST}(\beta a)$
-    如上关系的闭包.
-\paragraph{构造goto} $goto(I, X) = closure([A \to \alpha X. \beta] \,|\, [A \to \alpha . X \beta] \in I)$
-\paragraph{构造item集} 从$closure([S' \to .S, \$])$按照$goto$拓展得图.
-\paragraph{初态} $I_0 = closure(\{[S' \to .S,\, \$]\})$
-\paragraph{action} \begin{align*}
-    action(I, a)&\\
-        &= \text{shift}\; goto(I, a)    \qquad [A \to \alpha .a \beta,\, b] \in I\\
-        &| \text{reduce}\; A\to\alpha    \qquad [A \to \alpha.,\, a] \in I,\, A\to\alpha \neq S'\to S\\
-        &| \text{accept}                \qquad [S' \to S., \$] \in I\\
-        &| \text{error}                 \qquad \text{otherwise}
-    \end{align*}
-
-\subsection{LALR(1)}
-    和LR(0)一样状态数目.
-    其余方法和LR(1)相同.
-\paragraph{合并LR(1)同芯状态} 同芯: $[A\to\alpha.\beta, a]$中$A\to\alpha.\beta$相同
-
-
-% \section{Intermediate Code Generation}
-% \paragraph{DAG} expression DAG可以用来代替expression tree
-% \subsection{TAC} Three Address Code 形如 \\
-%     A = B op C\\
-%     A = op B\\
-%     A = B\\
-%     goto lbl\\
-%     if x goto lbl\\
-%     ifnot x goto lbl\\
-%     if x relop y goto lbl\\
-%     param x1, param x2...param xn, call p, n\\
-% \paragraph{addess} 可以是name, constant, 或者编译器生成的中间变量
-% % TODO
-
+\paragraph{S-属性文法}
+    如图\ref{ctrlflow-2},
+    循环通过综合属性$S.nextlist$实现, break语句通过综合属性$S.breaklist$传递.
+    \begin{figure*}[ht]
+    \centering
+    \includegraphics[width=0.9\textwidth]{ctrlflow-2.png}
+    \caption{S-属性文法的控制流翻译}
+    \label{ctrlflow-2}
+    \end{figure*}
+    \FloatBarrier
 
 \section{运行时存储组织}
 \subsection{存储分配策略}
