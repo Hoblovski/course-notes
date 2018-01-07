@@ -234,7 +234,7 @@ for i = 1 to n
 \paragraph{构造go} $go(I, X) = closure([A \to \alpha X. \beta] \,|\, [A \to \alpha . X \beta] \in I)$
 \paragraph{构造item集} 从$closure([S' \to .S, \$])$按照$go$拓展得图.
 \paragraph{初态} $I_0 = closure(\{[S' \to .S,\, \$]\})$
-\paragraph{action} 更精确的描述了完成reduce的条件
+\paragraph{action} 更精确的描述了完成reduce的条件.
 %    原理: 完成规约$A\to\alpha$时, 下一个输入$a$应当满足$a \in Follow(A\to\alpha)$,
 %        即各个产生式之后能跟的符号是不同的. 如$S \to Ab;\quad A \to Aa\;|\;\epsilon$.
 %        产生式$A\to Aa$之后只能跟$b$, 
@@ -250,6 +250,14 @@ for i = 1 to n
         \text{reduce}\; A\to\alpha & [A \to \alpha.,\, a] \in I,\, A\to\alpha \neq S'\to S\\
         \text{accept}              & [S' \to S., \$] \in I\\
         \text{error}               & \text{otherwise}\end{cases} \]
+\paragraph{LR(1)但非SLR(1)的例子} \begin{align*}
+        S &\to L = R \quad | \quad R\\
+        L &\to *R \quad | \quad \text{id}\\
+        R &\to L
+    \end{align*}问题就出在, $S\to R$和$L \to *R$中的$R$是不一样的$R$.
+    如果把它们分成分开变成两个非终结符$R_1$和$R_2$, 容易发现$Follow(R_1) = \{\$\}$,
+    而$Follow(R_2) = \{ \$, = \}$. 也就是说, 分析的过程中就已经限定了非终结符的一些性质,
+    在用其一般的$Follow$去套, 自然就可能出现问题.
 
 \subsubsection{LALR(1)}
     和LR(0)一样状态数目.
