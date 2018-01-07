@@ -450,12 +450,12 @@
     \end{description}
 \subsubsection{SA}
 \paragraph{背景} 假设 Alice 希望给 Bob 发送数据.
-    无论加密 (对称加密) 还是认证 (HMAC\footnote), 他们都需要一个共有的密钥.
+    无论加密 (对称加密) 还是认证 (HMAC\footnote{即MAC, 参考rfc 2104}), 他们都需要一个共有的密钥.
     IPsec讨论中假设这个双方已有这个共有密钥了.
 \paragraph{SPD} 安全策略数据库, 其过滤所有IP流量.
     并且对于每个IP包, 其指定对于此IP包的处理,
     是丢弃\verb/DISCARD/, 直接通过IP发送\verb/BYPASS/,
-    还是通过IPsec\verb/PROTECT/.
+    还是通过IPsec即\verb/PROTECT/.
     如果指定是\verb/PROTECT/, 它还需指定是\verb/ESP/还是\verb/AH/,
     使用传输模式还是隧道模式,
     之后或者利用IKE生成一个SA记录到SAD中, 或者交由SAD处理.
@@ -714,21 +714,22 @@
     引诱攻击者攻击这个没有有用信息的蜜罐系统.\par
     任何对于蜜罐的访问都是可疑的.
 \subsection{软件入侵}
+    入侵技术分为用户入侵和软件入侵, 课程中着重考虑软件入侵. 软件入侵主要考虑恶意软件.
     \begin{table}[ht!]
         \centering
     \begin{tabularx}{\textwidth}{|C|C|C|C|}
         \Topline
-                &           病毒 &              蠕虫 &          木马 \\
+                 & 病毒                & 蠕虫       & 木马              \\
         \Midline
-        宿主    &           需要 &            不需要 &          需要 \\
+        宿主     & 需要                & 不需要     & 需要              \\
         \Midline
-        表现形式 &          不以文件 &      独立的文件 &    伪装成其他文件\\
+        表现形式 & 不以文件            & 独立的文件 & 伪装成其他文件    \\
         \Midline
-        传播方式 &  依赖宿主    &           自主传播 &          依靠用户主动传播\\
+        传播方式 & 依赖宿主            & 自主传播   & 依靠用户主动传播  \\
         \Midline
-        危害 &      破坏数据/系统完整性 &   侵占资源 &      留下后门 \\
+        危害     & 破坏数据/系统完整性 & 侵占资源   & 留下后门          \\
         \Midline
-        传播速度 &          快 &            很快    &       慢 (不能自我复制)\\
+        传播速度 & 快                  & 很快       & 慢 (不能自我复制) \\
         \Bottomline
     \end{tabularx}
         \caption{各种恶意软件的特点}
