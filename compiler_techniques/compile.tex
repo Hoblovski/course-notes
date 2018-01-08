@@ -85,11 +85,13 @@
 \paragraph{First函数} First是符号串的函数, 定义如下\[
     First(\alpha) = \{a \in T \;|\; \exists \beta\,:\,\alpha \Rightarrow^* a\beta\}\]
     特别地, 如果$\alpha \Rightarrow^* \epsilon$, 则说$\epsilon \in First(\alpha)$.
-    意义是符号串对应的终结符串的首个终结符的取值集合.
+    注意$First$定义给$\alpha$, 可能包含$\epsilon$.\par
+    First集合的意义是符号串对应的终结符串的首个终结符的取值集合.
 \paragraph{Follow函数} Follow是非终结符的函数, 定义如下\[
     Follow(A) = \{a \in T \;|\; \exists \alpha, \beta \,:\, S\$ \Rightarrow^* \alpha A \beta\$, a \in First(\beta\$)\}
     \]
-    意思是$G[S]$句型中中, 可能跟在$A$的后面的终结符所有取值.
+    注意$Follow$定义给$A$, 可能包含$\$$.\par
+    Follow集合的意思是$G[S]$句型中中, 可能跟在$A$的后面的终结符所有取值.
 \paragraph{选择产生式} 希望展开$A$, 并且$\text{lookahead} = a$, 则选择的产生式$A \to \beta$应当满足\[
     a \in PS(A \to \beta) = \begin{cases}
         First(\beta) & \epsilon \not\in First(\beta)\\
@@ -288,7 +290,7 @@ for i = 1 to n
 \subsubsection{两趟方法的属性计算}
     生成语法树之后, 计算属性的大致步骤如下
     \begin{enumerate}
-        \item 分析语法书中结点属性 (即符号属性) 的依赖关系
+        \item 分析语法树中结点属性 (即符号属性) 的依赖关系
         \item 如果依赖关系不存在环, 则按照依赖关系的拓扑顺序计算属性值.\\
         如果依赖关系有环, 认为属性语法不是良定义的, 不予处理.\par
     \end{enumerate}
@@ -299,7 +301,7 @@ for i = 1 to n
     因此将元素属性一并存放在栈中, 每次规约时直接通过栈顶元素$N$个元素$X_1, X_2\ldots X_N$的属性计算$A.a$即可.
 \paragraph{L-属性文法} \label{onepass-l-attr-grammar} 采用自顶向下文法分析 (如LL(1)递归下降),
     将继承属性作为参数传入子符号的分析过程, 并且要求子符号分析过程返回子符号的综合属性.\par
-    即将$\mathbf{Parse}(A) \to \mathtt{void}$改为$\mathbf{Parse}(A, A.a_I) \to A.a_S$, 其中$A.a_I$表示$A$的继承属性, $A.a_S$表示$A$的综合属性.
+    即将$\mathbf{Parse}(A) \to \mathtt{void}$改为$\mathbf{Parse}(A, A.i) \to A.s$, 其中$A.i$表示$A$的继承属性, $A.s$表示$A$的综合属性.
 
 \subsection{基于翻译模式}
 \subsubsection{基本概念}
@@ -313,7 +315,7 @@ for i = 1 to n
         R & \to \epsilon  \; \{ R.s = R.i\}\\
         R & \to \alpha \;    \{ R_1.i = f(R.i, \alpha.s) \}\; R_1  \;   \{ R.s = R_1.s \}
     \end{align*}
-    可以认为$R.i$中保存了原来式子中所有其左便的所有信息.
+    可以认为$R.i$中保存了原来式子中所有其左边的所有信息.
 \subsubsection{自上而下计算}
     类似\ref{onepass-l-attr-grammar}, 但是计算属性在$\mathbf{parse(A)}$过程中进行.
 \subsubsection{自下而上计算}
@@ -322,11 +324,13 @@ for i = 1 to n
     因此需要提供一种方法实现继承属性的访问.\par
     可以将语法稍作变换, 添加若干空非终结符,
     由它们完成中间的语法规则的计算, 
-    使得产生式中间只有复写规则$X_i.i = X_{i-1}.s$.\par
+    使得产生式中间只有复写规则$X_i.i = X_j.s,\quad j < i$.\par
     这样可以沿着复写规则, 对于继承属性$X_i.i$,
-    最终找到综合属性$X_j.s$,
-    满足$j<i$而且两者是相等的 (根据复写规则).
-    这时因为$j < i$, 所以执行$X_i$的分析时$X_j$一定在栈中.
+    最终找到综合属性$X_j.s$,可以用$X_j.s$来代替$X_i.i$.\par
+    注意如果有多个产生式中都复写了$A.i = B.s$, 则需要保证这些产生式中,
+    $A$和$B$的相对位置不变, i.e. $A$和$B$之间隔多少个符号是定值,
+    这样生成规约时代码 (参见图\ref{gen-deduction-code}) 片段.
+
     \begin{figure}%
         \centering
         \subfloat[最初的翻译模式]{{\includegraphics[width=0.95\textwidth]{trans-ex-1.png}}}%
@@ -335,8 +339,8 @@ for i = 1 to n
         \\
         \subfloat[规约时代码片段]{{\includegraphics[width=0.95\textwidth]{trans-ex-3.png}}}%
         \caption{自下而上计算的例子}%
+        \label{gen-deduction-code}
     \end{figure}
-    \FloatBarrier
 
 \section{中间代码生成}
 \subsection{静态语义分析}
@@ -360,7 +364,7 @@ for i = 1 to n
     将所有下层表达式中未知的标号回填. 称为拉链方法 (backpatching).\par
     表达式$E$有两种综合属性$E.truelist$和$E.falselist$,
     包含未确定的, 但是知道是跳转到真还是假的标号.\par
-    还包含函数
+    还包含函数如表\ref{backpatch-func}
     \begin{table}[ht!]
         \centering
         \begin{tabularx}{\textwidth}{cL}
@@ -373,6 +377,7 @@ for i = 1 to n
             \Bottomline
         \end{tabularx}
         \caption{拉链方法的函数}
+        \label{backpatch-func}
     \end{table}
     实现如图\ref{bool-2}
     \begin{figure*}[ht]
@@ -424,7 +429,7 @@ for i = 1 to n
 \paragraph{基本约定} 
     称被嵌套的函数是子函数, 嵌套其他函数的函数是父函数.
     一个子函数有且仅有一个父函数, 只有父函数的函数体中才能调用子函数.\par
-    子函数能够访问父函数的变量\footnote{这里变量声明都类似Pascal语言, 是在函数体前生命的}.
+    子函数能够访问父函数的变量\footnote{这里变量声明都类似Pascal语言, 是在函数体前声明的}.
 \paragraph{问题}
     一个函数能看到的符号除了全局符号和自己栈帧中的符号, 还可能有父函数的符号.
     因此需要查找父函数的栈帧.
@@ -444,8 +449,7 @@ end;\end{verbatim} 所以全局变量是\verb/main/的变量, 全局函数是\ve
     维护一个表$D_n$.
     $D_n$表示从\verb/main/到当前函数在函数继承树上构成的链中,
     当前函数深度为$n$的祖先函数的栈帧位置.\par
-    如对于以下程序\pagebreak
-\begin{Verbatim}[samepage=true]
+    如对于以下程序 \begin{verbatim}
 program main;
 
     function A(params): ret
@@ -469,7 +473,7 @@ program main;
 begin
     ... A1(args); ...
 end.
-\end{Verbatim}
+\end{verbatim}
 第二次运行\verb/C/时, 栈应当类似于\\
     \begin{center}\begin{tabularx}{0.6\textwidth}{r|C|c|}
         \cline{2-3}
