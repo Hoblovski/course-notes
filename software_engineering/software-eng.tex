@@ -111,6 +111,163 @@
     同时也从输出域中寻找数据.\par
 
 
+\section{xUnit}
+\paragraph{测试的重要性} 有``错误率恒定定律'', ``规模代价平方定律'', 所以需要
+    尽可能早地发现错误，并在尽量小的范围内定位并修复错误.
+\paragraph{测试驱动开发}
+    开发新特性之前先写测试 (此时必定失败). 能够使得开发人员专注于需求.
+\paragraph{基本架构}
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{xunit-1.png}
+        \caption{xunit基本架构}
+    \end{figure}
+\paragraph{setup / teardown} 应当delegate inline setup / teardown;
+\paragraph{verification} 分为behavioural, state, delta etc.
+\paragraph{test doubles} 需要依赖的系统 (DOC) 不可用或者不方便. 可以用一个假的DOC, 也方便监控.\par
+    如Dummy Object: 假的值. Test Stub: 提供indirect input. Test Spy / Mock Object: 检查indirect output.
+    
+\section{系统测试}
+\paragraph{测试分类}\begin{itemize}
+        \item 单元测试, 单个模块的功能实现
+        \item 集成测试, 模块之间的接口测试
+        \item 系统测试, 包含其他系统, 如硬件等
+    \end{itemize}
+\subsection{集成测试}
+    不要一次测试所有单元的继承, 而是增量式地, 一部分一部分测试然后再接起来.
+\paragraph{Top-down 集成}
+    从顶层单元开始. 未计入的底层用 Test Stubs 代替.\par
+    问题是, 需要写大量的stub.
+\paragraph{Bottom-down 集成}
+    从底层开始. 需要一个控制器 (test driver), 用于假装上层单元.\par
+    问题是, 最重要的主逻辑是最后测试的.
 
+\subsection{效率测试}
+    性能: 响应时间; 吞吐量; 数据容量; 实时性.\par
+    测试: 负载测试 (load testing): 在一个指定的负载下;
+        压力测试 (stress testing): 极限负载;
+        soak testing: 在指定负载下的\emph{持续}表现;
+        spike testing: 突然增加负载;
+        configuration testing: 确定配置对于系统表现的影响.\par
 
+\section{需求工程}
+    需求将用户的目标和期望转化为工程师的规格说明.
+\paragraph{用户}
+    需要确定给谁做, 做什么, \emph{不做什么}.
+\paragraph{需求分层} \begin{enumerate}
+        \item 业务需求 -> 愿景和范围文档
+        \item 用户需求 -> 用户需求文档
+        \item 软件需求 -> 软件需求规格说明
+    \end{enumerate}
+\paragraph{需求建模泳道图}
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{lane.png}
+        \caption{泳道图}
+    \end{figure}
+\paragraph{数据流图}
+    分层需要满足平衡规则, 即不漏不多.
+\paragraph{判定方法}
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{pred-tree.png}
+        \caption{判定树方法}
+    \end{figure}
+    
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{pred-tbl.png}
+        \caption{判定表方法}
+    \end{figure}
+\paragraph{软件需求规格说明 SRS}
+    应当足够详细. 效率需要可测.\par
+    良好的SRS, 可验证, 每个需求是为了一个业务目标, 可测并且有界.\par
+    [条件] [主体] [动作] [客体] [对某个参数的约束] [约束的值]\par
+    需求应当正确, 准确, 无二义性, 量化的, 并且覆盖所有情况\par
+    需求不应当随便变更, 变更前应当经过评估.\par
+
+\section{UML}
+\paragraph{基本架构} 4+1 视图 \begin{itemize}
+        \item Design
+        \item Implementation
+        \item Process
+        \item Deployment
+        \item *** Use case ***
+    \end{itemize}
+\paragraph{用例图}
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{usecase.png}
+        \caption{用例图例子}
+    \end{figure}
+    Actor: 一个和系统交互的实体.\par
+    use case: 系统的主要的功能.\par
+\paragraph{Class Diagram}
+\paragraph{Sequence Diagram}
+    不一定, 但通常是一个use case之内的描述.\\
+    从实体和时间两个维度定义了系统的行为.\par
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{seqdiag.png}
+        \caption{Sequence Diagram例子}
+    \end{figure}
+    并且class diagram也是sequence diagram的一部分, 如
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{seqdiag1.png}
+        \caption{Class Diagram例子}
+    \end{figure}
+    方法就是, 将原需求拆成一系列的 (subject) {action} (object).
+    subject和object统称物, 每个物形成一条数显, 按照正确的顺序,
+    从subject有一个到object的横箭头, 上面写action.\par
+    如数据, 电话线等等都算``物''. 一个例子如图.
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{seqdiag2.png}
+        \caption{构造sequence diagram}
+    \end{figure}
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{seqdiag3.png}
+        \caption{构造sequence diagram}
+    \end{figure}
+
+\section{软件设计}
+\paragraph{设计原则} 模块化, KISS, 面向变化和重用, seperation of concerns.
+\paragraph{KISS} 简化代码, 简化架构 (中间件总线), 即插即拔.
+\paragraph{模块化} 设计时候考虑 coupling 和 cohesion.
+    要弱耦合, 强内聚.
+\paragraph{seperation of concerns} 每个程序元素做一个且仅一个事情.
+\paragraph{面向变化} 封装可能变化的, 保持接口不变; 允许动态绑定.
+\paragraph{面向重用} 
+
+\section{架构}
+    架构和功能不是分离的, 架构影响软件质量.\par
+\paragraph{性能}
+    包含 (并发性, 速度etc), 解决方法有队列, 均衡负载等
+\paragraph{可用性}
+    定义为足够长的时间段内可用时间的比例.\par
+    对于硬件, 可以用冗余投票提高可用性.\par
+    对于软件, 可以N版本编程. 但不能避免错误, 如多个团队犯了同样的错误, 或者尤其是规格中的错误.
+\paragraph{可修改性}
+    将旧的开发框架做成product line, 在新的开发中使用. 并且同时也不断优化旧的开发框架.
+\paragraph{架构风格}
+    \begin{itemize}
+        \item 事件驱动. 可以直接用callback管理.
+                也可以利用间接方法: 实现广播模型, 在总线上广播; 或者采用中断处理方法.
+        \item 管道和filter. 每个模块的输入通过模块变换到输出, 一个模块的输出接到另一个模块的输入上.
+        \item 分层架构. 如OSI RefModel.
+        \item 仓库. 一个中心仓库保存所有子系统需要的数据.
+    \end{itemize}
+\paragraph{分布式架构风格}
+    分布式的有C/S风格和P2P风格.
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{csarch.png}
+        \caption{C/S的架构风格}
+    \end{figure}
+\paragraph{SOA} Service oriented architecture. C/S设计, 但是更强调软件部件间的解耦合.
+\paragraph{Micro-Service} 一个应用是一系列小而专一的服务组成的. 服务自己是一个进程,
+    其间通过轻量级的方式 (如HTTP API) 通信. 
+\paragraph{Web应用架构} REST, 服务器集群\ldots
 \end{document}
