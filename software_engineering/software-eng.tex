@@ -270,4 +270,52 @@
 \paragraph{Micro-Service} 一个应用是一系列小而专一的服务组成的. 服务自己是一个进程,
     其间通过轻量级的方式 (如HTTP API) 通信. 
 \paragraph{Web应用架构} REST, 服务器集群\ldots
+
+
+\section{质量管理}
+\paragraph{critical system}
+    可靠性要求极高的系统, 甚至允许采用不经济的手段保证可靠性.
+\paragraph{错误种类} \begin{description}
+        \item[fault] 错误可能的源头
+        \item[error] 到达服务接口的fault
+        \item[failure] 导致服务出现错误的error
+    \end{description}
+\paragraph{V&V} Verification: 是否符合规格; Validation: 是否符合客户期望.
+\paragraph{inspection}
+    包括code review, formal inspection.
+\paragraph{cleanroom computing}
+    目的是完全避免错误.
+    包含 peer review; 增量开发等等.\par
+
+\section{项目管理}
+\paragraph{团队} 需要团结etc.
+\paragraph{工作分解} 如responsibility assignment matrix.
+\paragraph{任务调度} 寻找什么任务是不能拖延的:
+    使用关键路径方法, 通过earliest和latest来完成.
+\paragraph{甘特图} 如图.
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{gantt.png}
+        \caption{甘特图}
+    \end{figure}
+\paragraph{风险管理} 有``救火队员''的风险处置方法, 以及预先做好准备的风险管理.
+    RMMM: Risk Mitigation, Monitoring, Management.
+
+\section{Software Process}
+    软件的质量被其过程管理的质量控制.
+\paragraph{软件开发模型}
+    \begin{itemize}
+        \item 瀑布模型. 需求确定, 一步一步地完成. 不能很好的适应需求改变.
+        \item 增量模型. 一部分一部分地开发, 每次都只分析这一部分的需求.
+        \item 原型模型. 开发过程中, 利用原型和客户交流, 细化需求.
+        \item 螺旋模型. 更注重风险管理.
+    \end{itemize}
+\paragraph{RUP} 常和UML配套使用.
+    \begin{figure}[ht!]
+        \centering
+        \includegraphics[width=\textwidth, height=\textheight, keepaspectratio]{rup.png}
+        \caption{rational unified process}
+    \end{figure}
+\paragraph{CMM}
+\paragraph{SPICE}
 \end{document}
