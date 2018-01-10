@@ -221,8 +221,8 @@ for i = 1 to n
     原理: 完成规约$A\to\alpha$时, 下一个输入$a$应当满足$a \in Follow(A)$.
 \paragraph{action} \[action[i, a] = \begin{cases}
     \text{shift}\; j          & J = go(I, a)\\
-    \text{reduce}\; A\to\beta & [A \to \beta.] \in I \land a \in Follow(A)\\
-    \text{accept}             & [S' \to S.] \in I\\
+    \text{reduce}\; A\to\beta & [A \to \beta.] \in I \quad\land\quad a \in Follow(A)\\
+    \text{accept}             & [S' \to S.] \in I \quad\land\quad a = \$\\
     \text{error}              & \text{otherwise}
     \end{cases}\]
 
@@ -276,7 +276,7 @@ for i = 1 to n
 \subsection{基于属性文法}
 \subsubsection{基本概念}
 \paragraph{定义}
-    在CFG基础上, 对每个$X \in V \cup T$关联属性, 记为$X.a, X.b$等.\par
+    在CFG基础上, 对每个$X \in V$关联属性, 记为$X.a, X.b$等.\par
     每个产生式$A\to X_1 X_2 \ldots X_N,\; X_i \in V \cup T, X_0 = A$关联一个语法动作,
     语法动作是若干个属性计算的序列, 每个属性计算形如$X_i.a = f(X_j.b \;|\; j \neq i, b\text{是}X_j\text{的属性}),\; 0 \le m \le N$.
 \paragraph{综合属性} $A \to X_0 \ldots X_N$关联的语法动作是$A.a = f(X_i.b)$则称$A.a$是综合属性.
@@ -639,8 +639,8 @@ end.
 \subsubsection{寄存器分配}
     即将伪寄存器映射到物理寄存器的方法, 不考虑到泄露到内存的情况.
     采用寄存器相干图. 原理是, 如果在$A$的定值点寸后$B$是活跃的,
-    则$A$, $B$应当分配到不同的物理存储器. 于是将伪寄存器作为结点建图,
-    求图色数就是程序最少使用的物理存储器.
+    则$A$, $B$应当分配到不同的物理存储器, 否则对$A$的定值会修改$B$的值.
+    于是将伪寄存器作为结点建图, 求图色数就是程序最少使用的物理存储器.
 
 %\paragraph{程序内存布局} 程序的虚拟内存空间的典型安排如\\
 %    \begin{center}
