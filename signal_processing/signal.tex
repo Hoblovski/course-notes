@@ -95,6 +95,26 @@
         \item[冲激函数的位移特性] $f(t) * \delta(t - t_0) = f(t - t_0)$, 注意冲激函数点乘得值, 卷积得函数
     \end{description}
 
+\section{傅里叶级数}
+\subsection{三角函数形式的傅里叶级数}
+    性质足够良好的周期函数都可以表达为\[
+        f(t) = a_0 + \sum_{n = 1}^{\infty} \left( a_n \cos n\omega t \,+\, b_n \sin n\omega t \right)\]
+    其中$T$为函数的周期, $\omega = \frac{2\pi}{T}$.
+\paragraph{求解系数}
+    直接由函数基性质\begin{align*}
+        a_0 &= \frac{1}{T} \int_T f(t) \ud t\\
+        a_n &= \frac{2}{T} \int_T f(t) \cos n\omega t \,\ud t\\
+        b_n &= \frac{2}{T} \int_T f(t) \sin n\omega t \,\ud t
+    \end{align*}
+\subsection{复数形式的傅里叶级数}
+    性质足够良好的周期函数都可以表达为\[
+        f(t) = \sum_{n = -\infty}^{\infty} F_n e^{j n \omega t},\quad n \in \Zset
+    \]其中$T$为函数的周期, $\omega = \frac{2\pi}{T}$.
+\paragraph{求解系数}
+    利用函数基性质 $\int_T e^{j n \omega t} e^{j -m \omega t} \ud t = |T| \delta_{nm}$,
+    有\[
+        F_n = \frac{1}{|T|} \int_T f(t) e^{-j n \omega t}\]
+
 \section{CTFT}
 \subsection{定义}
 注意信号的傅里叶变换不一定存在.
@@ -110,7 +130,8 @@
 \subsection{性质}
     \begin{description}
         \item[线性性] $\displaystyle \CTFT[\alpha f + \beta g] = \alpha \CTFT[f] + \beta \CTFT[g]$
-        \item[唯一性] $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$
+        \item[唯一性] $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$,
+            由此有$\displaystyle \ICTFT = \frac{1}{2\pi} \mathbf{R} \CTFT$
         \item[对偶性] $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(-t)$ 特别注意最后的负号
         \item[对偶性 (赫兹域)] $\displaystyle \CTFT [ F(\nu) ] = f(-t)$ 特别注意最后的负号
         \item[反褶] $\displaystyle \CTFT[f(-t)] = F(-\omega)$
@@ -138,14 +159,15 @@
                 $\displaystyle \Delta_{T_1} (t)$ & $\displaystyle \omega_1 \Delta_{\omega_1}(\omega),\quad \omega_1 = \frac{2\pi}{T_1}$ \\ \hline
                 $\displaystyle e^{j \omega_0 t} [\alpha \le t < \beta]$ & $\displaystyle \frac{e^{j(\omega_0 - \omega)\beta} - e^{j(\omega_0-\omega)\alpha}}{j (\omega_0 - \omega)}$ \\ \hline
                 $\displaystyle \sgn(t)$ & $\displaystyle \frac{2}{j\omega}$\\\hline
-                $\displaystyle \frac{1}{t}$ & $\displaystyle \pi j \sgn(\omega)$\\\hline
+                $\displaystyle \frac{1}{t}$ & $\displaystyle -j \pi \sgn(\omega)$\\\hline
                 $\displaystyle \Sa(t)$ & $\displaystyle \pi G \left( \frac{\omega}{2} \right) $\\ \hline
         \end{tabular}
     \end{table}
 
 \subsection{抽样信号}
 \paragraph{抽样过程} 自然地, 采用冲激串抽样 $f_S(T) = f(t)\cdot \Delta_{T_S}(t)$
-\paragraph{抽样后傅里叶变换} $\displaystyle F_S(\omega) = \CTFT[ f_S(t) ] = \frac{1}{T_S} \sum_n F(\omega - n \omega_S)$
+\paragraph{抽样后傅里叶变换} $\displaystyle F_S(\omega) = \CTFT[ f_S(t) ] = \frac{1}{T_S} \sum_n F(\omega - n \omega_S)$.
+    可以看出, 信号经过$T_S$抽样之后, 其CTFT变成一个周期为$\omega_S$的周期函数.
 \paragraph{抽样定理} 对于截止频率为$\omega_c$的信号$f(t)$, 若$\omega_S \ge 2 \omega_c$, 则$F_S$是周期为$\omega_S$的函数,
     并且$\forall \omega \in [-\frac{\omega_S}{2}, \frac{\omega_S}{2}]\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega)$. 其中$2\omega_c$称为Nyquist频率.
 
@@ -177,12 +199,6 @@
         x(n) &=& f(nT_S)\\
         X(\omega_D) &=& F(2\pi \frac{\omega_A}{\omega_S})
     \end{eqnarray*}
-    归一化情况下, 对于$n < 0$或者$n \ge L$, $x(n)$的取值有多种约定 \begin{enumerate}
-        \item $x(n) = x(n \mod L),\quad n < 0, n \ge L$
-        \item $x(n) = 0,\quad n < 0, n \ge L$
-        \item $x(n)$未定义$,\quad n < 0, n \ge L$
-    \end{enumerate}
-    不同的作者, 不同的上下文会选择不同的约定.
 
 \subsection{性质}
     \begin{description}
@@ -201,31 +217,6 @@
     \end{description}
 
 \section{DFT}
-% TODO
-%       t                       f
-%       无限长                  无限长
-% 抽样
-% t被冲激串作用, f被变成周期函数
-%       可数多                  有限长
-% 截断
-% t再加上有限长 
-%       可数多+有限长=有限多    有限长
-% 周期延拓
-% t变成周期函数, f一定是离散的
-%       有限多                  有限长+可数多=有限多
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-%
-
-
 \subsection{定义}
     数字信号$x$是长度为$L$的信号$x(0), x(1) \ldots x(L - 1)$,
     考虑$X = \DTFT[x]$在$\omega_k$上的值$X(\omega_k)$. 其中
@@ -243,6 +234,13 @@
 \paragraph{补零} 如果$L < N$, 考虑$\hat{x}(n) = \begin{cases} x(n) & 0 \le n \le L - 1\\ 0 & otherwise \end{cases}$
 \paragraph{回绕} 如果$L > N$, 考虑$\hat{x}(n) = \begin{cases} \sum_m x(n + mN) & 0 \le n \le N - 1 \\ 0 & otherwise \end{cases}$\par
     由定义, 从IDFT只能得到回绕序列$\hat{x}$, 即DFT不满足唯一性 $\IDFT[\DFT [x]] \neq x$. 但是在$N = L$的情况下, DFT仍然满足唯一性.
+\paragraph{信号在时间上的约定}
+    归一化情况下, 对于$n < 0$或者$n \ge L$, $x(n)$的取值有多种约定 \begin{enumerate}
+        \item $x(n) = x(n \mod L),\quad n < 0, n \ge L$
+        \item $x(n) = 0,\quad n < 0, n \ge L$
+        \item $x(n)$未定义$,\quad n < 0, n \ge L$
+    \end{enumerate}
+    不同的作者, 不同的上下文会选择不同的约定.
 
 \subsection{性质}
     基本与DTFT性质相同. 此外, DFT频谱是周期函数, 周期为$N$.
@@ -449,6 +447,51 @@
     根据定义即有\[
         H(z) = H(e^{j\omega})\]
 
+\subsection{滤波器的设计}
+\subsubsection{FIR低通滤波器的设计}
+\paragraph{理想滤波器} 显然$\CTFT[\frac{\sin(t \omega_C)}{t \pi}] = G(\frac{\omega}{2\omega_C})$.
+    因此在数字频率上, $\frac{\sin(n \omega_C)}{n \pi}$是一个理想滤波器,
+    其中$\omega_C$是数字截止频率$\omega_C = 2\pi \frac{f_C}{f_S}$.
+\paragraph{设计步骤} 基本有如下几步 \begin{enumerate}
+        \item 选择$\omega_C$, 为理想滤波器的数字截止频率
+        \item 计算$h(n) = \frac{\sin(n \omega_C)}{n \pi}$
+        \item 根据阻带衰减, 选择窗函数
+        \item 查表计算得到窗长$N$ ($N$舍入到最近奇数, $N = 2k +1$)
+        \item 根据$N$计算窗函数的表达式$w(n)$
+        \item FIR表达式为$h(n)w(n),\quad |n| \le k$
+        \item 平移FIR, 得到因果FIR为$h(n-k)w(n-k)$
+    \end{enumerate}
+    FIR滤波器必定是稳定的.
+\subsubsection{FIR其他滤波器}
+\paragraph{高通和带通} 将低通最终得到的$h_1(n) = h(n-k)w(n-k)$移位即可$h_2(n) = h_1(n) \cos(n\omega_0)$.\par
+    另外带通也可以通过低通且高通的方法实现.
+\paragraph{带阻} 带足就等于低通加高通.
+\subsubsection{IIR滤波器的实现}
+\paragraph{双线性变换} 双线性变换将$H(s)$变为$H(z)$, 式为\[
+        s = 2 f_S \frac{z-1}{z+1}\]
+\paragraph{巴特沃斯滤波器}
+    对于一阶, 是$H(s) = \frac{\Omega_{p1}}{s + \Omega_{p1}}$, 其中$s = j \Omega$.
+    因此 $|H(\Omega)| = \frac{1}{\sqrt{\left(\frac{\Omega}{\Omega_{p1}}\right)^2 + 1}}$
+\paragraph{求解步骤}
+    \begin{enumerate}
+        \item 根据题目写出模拟边缘频率 $f_{p1},\;f_{s1}$.
+            其中$f_{p1}$是$-3 \;\textrm{dB}$的频率
+        \item 计算阻带边缘增益, $\delta_S = 10^{x/20}$,
+            其中$f_{s1}$的增益是$x \;\textrm{dB}$
+        \item 计算得到数字边缘频率 $\omega_{p1} = 2\pi \frac{f_{p1}}{f_S}$, 
+            以及$\omega_{s1} = 2\pi \frac{f_{s1}}{f_S}$
+        \item 用预扭曲方程求出滤波器的边缘频率
+            $\Omega_{p1} = 2 f_S \tan \frac{\omega_{p1}}{2}$, 
+            以及
+            $\Omega_{s1} = 2 f_S \tan \frac{\omega_{s1}}{2}$
+        \item 根据方程\[
+                n \ge \frac
+                    { \lg\left(\delta_S^{-2} - 1\right)  }
+                    { 2 \lg\left( \frac{\Omega_{s1}}{\Omega_{p1}}\right)} \]
+            求得IIR的阶数$n$
+        \item 如果$n = 1$, 利用上述一阶公式计算$H(z)$
+    \end{enumerate}
+
 \section{好题}
 \paragraph{CTFT} 不用暴力求$F(\omega)$, 其中$f(t) = \begin{cases} |\sin(\pi t)| & |t| < 1\\ 0 & \text{otherwise} \end{cases}$
 
@@ -464,5 +507,8 @@
 对于$f(t)$和$T_S$, 令 $f_S(t) = f(s) \cdot \Delta_{T_S}(t)$, 令 $ x(n) = f(nT_S)$, 则有 \[
     \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S}
     \]
+\subsection{2}
+    序列线卷积可以撕纸来求. 注意项数要足够!\par
+    圆卷积的是先填零/回绕之后再求.
 
 \end{document}
