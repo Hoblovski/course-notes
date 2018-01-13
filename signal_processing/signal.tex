@@ -193,13 +193,21 @@
 
 \subsection{时间/频率归一化}
     CTFT处理, $f(t), F(\omega)$中的$t, \omega$是物理空间中的时间/频率, 称为模拟时间/频率.
-    DTFT中, 以上定义中$x(n), X(\omega)$中的$n, \omega$是数字时间/频率.
-    易证有如下的对应关系, 此即数字时间/频率和模拟时间/频率的对应关系
+    DTFT中, 以上定义中$x(n), X(\omega)$中的$n, \omega$是数字时间/频率.\par
+    数字时间用$n$表示, 范围是整数集$\Zset$, 而模拟时间$t$的范围是实数集$\Rset$.
+    数字 (角) 频率的范围是一个Nyquist区间$[0, 2\pi)$, 而模拟频率的范围也是整个实数集$\Rset$.\par
+    当且仅当完成无损采样的情况下, 数字时间/频率才有意义.
+    数字时间$n$, 数字频率$\omega_D$, 模拟时间$t$和模拟频率$\omega_A$的关系如下式.
     \begin{eqnarray*}
-        x(n) &=& f(nT_S)\\
-        X(\omega_D) &=& F(2\pi \frac{\omega_A}{\omega_S})
+        n        & \Rightarrow & t = n T_S                      \\
+        t        & \Rightarrow & n =
+            \begin{cases} \frac{t}{T_S} & \frac{t}{T_S} \in \Zset \\ \text{undefined} & \text{otherwise (not on sampled point)} \end{cases}\\
+        \omega_A & \Rightarrow & \omega_D = \frac{\omega_A}{\omega_S} 2\pi \\
+        \omega_D & \Rightarrow & \omega_A = \frac{\omega_D}{2 \pi} \omega_S
     \end{eqnarray*}
 
+    上式中$T_S$是符合Nyquist要求的采样周期, $\omega_S = \frac{2\pi}{T_S}$.
+    可以看出, 数字时间的范围是$\Zset$, 是离散的.
 \subsection{性质}
     \begin{description}
         \item[和CTFT关系] $\displaystyle \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S})$
@@ -305,7 +313,7 @@
 
 % \section{TODO}
     %DTFT->CTFT: \[ X(\omega) = \CTFT[f_{S}](:w
-    
+
 \section{系统}
 \subsection{基本概念}
 \paragraph{理解}
@@ -334,7 +342,7 @@
     称如上的系统为$N$阶滤波器.
 \subsubsection{流图}
     有三种单元: 延时单元, 加法单元, 乘法单元. 如图\ref{sys-unit-graph}所示.
-    \begin{figure*}[ht]
+    \begin{figure*}[ht!]
     \centering
     \includegraphics[width=0.6\textwidth]{sys-unit-graph.png}
     \caption{三种流图单元}
@@ -345,13 +353,26 @@
         \item 级联滤波器. 减少延时单元的深度, 降低因过深的延时单元链造成的指数级误差.
         \item 直接II型构建法. 减少了对输入和输出状态的存储, 即延时单元减少.
     \end{itemize}
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{dir-1.png}
+    \caption{直接I型}
+    \label{dir-1}
+    \end{figure}
+    \begin{figure}[ht!]
+    \centering
+    \includegraphics[width=0.95\textwidth]{dir-2.png}
+    \caption{直接II型}
+    \label{dir-2}
+    \end{figure}
+
 \subsubsection{冲激响应}
     $\mathcal{F}[\delta(n)]$称为$\mathcal{F}$的冲激响应 (Impluse Response).
     根据冲激响应是否在有限时间内收敛到$0$, 也分为有限和无限冲激响应.\par
     记$h(x) = \mathcal{F}[\delta]$, 因为$x(n) = \sum_k x(k) \delta(n - k) = x * \delta$,
     故不严谨地有,
     \begin{align*}
-        \mathcal{F}\left[x\right] &= \mathcal{F}\left[x * \delta\right] \\ 
+        \mathcal{F}\left[x\right] &= \mathcal{F}\left[x * \delta\right] \\
         &= \mathcal{F}\left[\sum_k x(k)\delta(n - k)\right]\\
         &= \sum_k x(k) \mathcal{F}\left[\delta(n - k)\right]\\
         &= \sum_k x(k) h(n - k)\\
@@ -359,7 +380,7 @@
     \end{align*}
 \paragraph{应用} \begin{description}
         \item[稳定定理] $\sum_n |h(n)|$绝对收敛 $\Leftrightarrow$ $\mathcal{F}$是稳定系统.
-        \item[串联] 设$\mathcal{F}[\delta] = h_{\mathcal{F}},\,\mathcal{G}[\delta] = h_{\mathcal{G}}$, 
+        \item[串联] 设$\mathcal{F}[\delta] = h_{\mathcal{F}},\,\mathcal{G}[\delta] = h_{\mathcal{G}}$,
             则$\mathcal{F} \mathcal{G} [\delta] = h_{\mathcal{F}} * h_{\mathcal{G}}$
         \item[并联] $\left(\mathcal{F} + \mathcal{G}\right) [\delta] = h_{\mathcal{F}} + h_{\mathcal{G}}$
     \end{description}
@@ -478,10 +499,10 @@
             其中$f_{p1}$是$-3 \;\textrm{dB}$的频率
         \item 计算阻带边缘增益, $\delta_S = 10^{x/20}$,
             其中$f_{s1}$的增益是$x \;\textrm{dB}$
-        \item 计算得到数字边缘频率 $\omega_{p1} = 2\pi \frac{f_{p1}}{f_S}$, 
+        \item 计算得到数字边缘频率 $\omega_{p1} = 2\pi \frac{f_{p1}}{f_S}$,
             以及$\omega_{s1} = 2\pi \frac{f_{s1}}{f_S}$
         \item 用预扭曲方程求出滤波器的边缘频率
-            $\Omega_{p1} = 2 f_S \tan \frac{\omega_{p1}}{2}$, 
+            $\Omega_{p1} = 2 f_S \tan \frac{\omega_{p1}}{2}$,
             以及
             $\Omega_{s1} = 2 f_S \tan \frac{\omega_{s1}}{2}$
         \item 根据方程\[
