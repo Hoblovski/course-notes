@@ -11,6 +11,9 @@
             计算机和 AP 无线路由器 通信
         交换以太网
             计算机连接到交换机, 和交换机通信以完成数据交换
+    MAN
+    WAN
+
 
 分层网络
     概念    - 协议栈
@@ -129,7 +132,7 @@
 多路复用
     时分复用
         主要用于数字传输
-        T1 传输, 1.544 Mbps
+        T1 传输, 1.536 Mbps
     频分复用
         将频率分为多部分
     波分复用
@@ -207,8 +210,6 @@
         有确认, 有链接: 卫星信道, 长途电话  -> 长距离而且不可靠的链路
 
     成帧 framing
-
-    处理错误
         描述帧的开始和结束:
             1. 字节记数法
                 利用帧头部的一个字段描述整个帧的长度
@@ -288,14 +289,13 @@
             处理ack     (WS)
                 // it does not matter even if WS.size = 0
                 IF ack = WS.low
-                    // send new frame and piggyback
+                    stop timer <WS.low>
+                        // send new frame and piggyback
                     send frame <seq=WS.high, ack=WR.low-1>
                     start timer <WS.high>
-                    // update WS
+                        // update WS
                     WS.low++
                     WS.high++
-                    // timer
-                    stop timer <WS.ack>
                 ELSE
                     // resend all unack'd frames
                     send frame <seq=WS.low, ack=WR.low-1>
@@ -349,7 +349,7 @@
             WS.high++
         接收到一帧 <seq, ack>
             处理接受
-                IF seq IN WR
+                IF seq = WR.low
                     forward frame to network layer
                     WR.low++
                     WR.high++
@@ -375,6 +375,11 @@
 
         seq in Ring[0, N+1)
 
+        要求 NR <= (N+1) / 2
+            ->  同时最多有 6 个未确认的帧 WS <= 6
+                帧号范围是 0~7
+                接受窗口大小为 4
+
         send frame 隐含包含 start timer
         acknowledge 隐含包含 stop timer
 
@@ -393,10 +398,10 @@
                     start timer <ACK>
                 if seq in WR        AND     NOT recvd[seq]
                     recvd[seq] := TRUE
-                    store frame <seq>
+                    save frame <seq>
                     while recvd[WR.low]
                         recvd[WR.low] := FALSE
-                        get frame <WR.low>,
+                        load frame <WR.low>,
                             and forward to network layer
                         WR.low++
                         WR.high++
@@ -539,7 +544,7 @@ HDLC
             参见图4-10
             竞争部分可以从树的不同深度开始, 以适应不同负载
 
-    无限LAN协议
+    WLAN协议
         无线网络: 不能检测冲突
             不是完全的广播, 而是只能收到/发给靠近的结点
         问题:
@@ -602,7 +607,7 @@ HDLC
         二进制后退算法
             一旦发生冲突, 将之后的时间划分为 51.2 us 为单位
             第1个冲突后, 诸站点等0或1个时间单位传输
-            第k次冲突后, 等待 0..min(2**k, 1023) 个单位
+            第k次冲突后, 等待 0..min(2**k-1, 1023) 个单位
             16次冲突后, 失败报告上层
 
     交换式以太网
@@ -888,24 +893,24 @@ HDLC
                         可能有不同的丢弃策略: 优先丢弃新报/旧包
 
 
-    网络互连
-        级联虚电路
-            当目的主机不在子网内时,
-                在子网内找一个离目的主机最近的路由,
-                建立源主机到它, 它到目的主机的虚电路
-            特点
-                可以预留资源等虚电路优点
-                健壮性差, 不抗拥塞
-                路由需要大量内存
-        无连接网络互连
-            需要在连接不同子网的多协议路由器中, 做协议转换
-            特点
-                健壮性好
-                包头长
-                包到达无序
-        隧道技术
-            源主机和目的主机的网络类型相同
-            直接将IP包作为载荷传输
+网络互连
+    级联虚电路
+        当目的主机不在子网内时,
+            在子网内找一个离目的主机最近的路由,
+            建立源主机到它, 它到目的主机的虚电路
+        特点
+            可以预留资源等虚电路优点
+            健壮性差, 不抗拥塞
+            路由需要大量内存
+    无连接网络互连
+        需要在连接不同子网的多协议路由器中, 做协议转换
+        特点
+            健壮性好
+            包头长
+            包到达无序
+    隧道技术
+        源主机和目的主机的网络类型相同
+        直接将IP包作为载荷传输
 
     分段:
         透明: 中间网关做
@@ -938,14 +943,14 @@ HDLC
            |                    Options                    |    Padding    |
            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
             TOTALLEN:   2字节, 意味着 IP 包顶多 65536 字节长
-            IHL:        4位, 但是合法的值是从5开始
+            IHL:        4位, 但是合法的值是从5开始 (5个32位字)
         IP地址:
             组成: 网络号 network (包含子网) + 主机号 Host
                 全0表示本地, network=全0表示本局域网
                 全1表示广播, network!=全1表示某另外的局域网广播
             子网: 将网络内部继续分化成若干区域
             最初: 地址分类 (A类地址 ... E类地址)
-            修正: 无类别地址 (subnet mask是对于 network 整体的掩码 整体的掩码))
+            修正: 无类别地址 (subnet mask是对于 network 整体的掩码)
         ICMP
             主要用于报告和测试
             被封装在IP包中
@@ -1067,7 +1072,7 @@ HDLC
             网络可能丢失 / 延迟包, 如遇到拥塞
         解决: 多次握手方法
             参见Fig. 6-11
-            \graphics{3-handshake}
+            \graphics{estab-handshake}
 
     释放连接
         理论基础: 不存在完全可靠的释放连接方法
@@ -1085,6 +1090,7 @@ HDLC
 
 TCP
     TSAP通过 IP地址:port端口 表示
+
     特点
         基于字节流, 消息的边界不能被保留
         不支持多播和广播
@@ -1121,7 +1127,7 @@ TCP
         Sequence Number 和 Acknowledgment Number 用于完成滑动窗口
             滑动窗口确认的是字节, 每个字节用他是本方向第几个传输的字节表示
         Sequence Number: data中第一个字节的 seq
-        Acknowledgment Number:  相当于至今接受成功了多少个字节
+        Acknowledgment Number:  !! 注意是, 下一个期待的字节
         Data offset 即 TCPHDRLEN
         Window 用于 可变滑动窗口的窗口大小, 用于流控
             发送方可以从再 Sequence Number 开始再发送 Window 大小的字节流
@@ -1158,21 +1164,22 @@ TCP
         2. 慢网络, 快接收
             发送方不仅知道 接收方的可变滑动窗口,
                     还知道 网络的拥塞窗口 congwin
+                        这表示网络能接受的有多少个未确认的包
             - slow start
-                建立连接时congwin大小为最大允许 TCP segment 长
-                发出1个最大大小的 TCP segment
-                    如果正确响应
-                        congwin加倍
-                ...发送 (congwin / 最大 TCP segment) 个 最大 TCP segment
-                    如果正确相应
-                        congwin加倍
-                直到丢包超时, 或者congwin超过阈值 64K
+                congwin ::= 1
+                
+                until congwin > threshold
+                    send congwin segments with maximun segment size
+                    if  loss of packet / timeout
+                        break
+                    congwin *:= 2
+
             - congestion avoidance
                 如果 congwin > 阈值
                     对于每个接收到的ACK, 都 congwin += MAX TCP segment
                     直到丢包超时
-                阈值 = congwin / 2
-                congwin = 1
+                threshold := congwin / 2
+                congwin := 1
                 运行 slow start
 
 UDP
@@ -1242,4 +1249,63 @@ rev
         对于行列校验存在不能检测的三位错误
     CSMA/CD协议需要在发送数据到信道前捕获信道
         即信道端到端传输需要时间最长时间的两倍
+******************************************************************************
 
+应用层
+各种网线
+
+1. 硬盘, 磁带的 GB 指的是 2**30,
+    而网络传输的 Gbps 是 10**9 bits/sec
+
+2. 注意换算 字节和位, 注意大小写
+
+3. 计算数据传输率, 
+    要同时计算 Shannon 定理的答案和 Nyquist 定理的答案,
+    比较取更小
+
+电路交换
+             k 跳;
+    一跳延时 d 秒;
+    传输率   b 位一秒;
+             x 位;
+    建立     s 秒;
+    时间:
+        s    + kd       + x/b
+        建立 + 传播延迟 + 最初发送
+分组交换 (负载较轻)
+             k 跳;
+    一跳延时 d 秒;
+    传输率   b 位一秒;
+             x 位;
+    分组大小 p 位;
+    时间:
+        x/b      + kd       + (k-1)p/b
+        最初发送 + 传播延迟 + 存储转发
+
+******************************************************************************
+CN - a Top Down approach
+
+>> TCP Congestion Control
+
+In order to focus on congestion control (as opposed to flow control), let us hence-
+forth assume that the TCP receive buffer is so large that the receive-window con-
+straint can be ignored; thus, the amount of unacknowledged data at the sender is
+solely limited by cwnd. We will also assume that the sender always has data to
+send, i.e., that all segments in the congestion window are sent.
+
+> Slow start
+
+Thus, in the slow-start state, the
+value of cwnd begins at 1 MSS and increases by 1 MSS every time a transmitted
+segment is first acknowledged. 
+
+This process results in a doubling of the sending rate every RTT. Thus, the TCP
+send rate starts slow but grows exponentially during the slow start phase.
+
+> Congestion Avoidance
+
+Thus, rather than doubling the value of cwnd every RTT, TCP adopts a
+more conservative approach and increases the value of cwnd by just a single MSS
+every RTT [RFC 5681]. This can be accomplished in several ways. A common
+approach is for the TCPsender to increase cwnd by MSS * (MSS/cwnd) when-
+ever a new acknowledgment arrives. 
