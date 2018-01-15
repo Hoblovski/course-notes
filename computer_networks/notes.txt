@@ -14,7 +14,6 @@
     MAN
     WAN
 
-
 分层网络
     概念    - 协议栈
             - 协议
@@ -330,6 +329,10 @@
             链路利用率
                 <= w / (1 + 2 BD)
             其中 w 是窗口技术
+            引用原书中一段话,
+               Clearly, the combination of a long transit time,
+                    high bandwidth, and short frame length
+                    is disastrous in terms of efficiency.
 
     回退 N 协议
         保持至多N个帧同时传输
@@ -950,7 +953,8 @@ HDLC
            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
            |Version|  IHL  |Type of Service|          Total Length         |
            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-           |         Identification        |Flags|      Fragment Offset    |
+           |         Identification        |0|D|M|      Fragment Offset    |
+           |                               | |F|F|                         |
            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
            |  Time to Live |    Protocol   |         Header Checksum       |
            +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -1383,4 +1387,7 @@ transmitted?
 
     > 2: consider NAKs
 
+******************************************************************************
 
+分配IP地址, 如果分配 4096 个, 那么起始地址必须是 4096 的倍数
+    可以中间去一些地址不分配 (padding) 来解决此问题
