@@ -1221,14 +1221,40 @@ UDP
         - DNS
             DNS请求以 UDP 发出
             本地DNS完成则返回, 否则向上层DNS请求
+            域名不区分大小写
         - SNMP
             基于 UDP
+            * 性能管理
+            * 故障管理
+            * 配置管理
+            * 记账管理
+            * 安全管理
         - SMTP
+            * 用户代理: 用户阅读和发送
+            * 消息传输代理: 完成消息发送, 常常是守护进程
             基于 TCP
             端口 25
+        - WWW
+            - http
+                TCP
+                80端口
+                HTTP 1.0: 使用非持久连接
+                    服务器解析请求
+                    发出响应报文后关闭连接
+                    每个object的取得都需要两个RTT
+                    每个object的传输都要经历慢启动
+                HTTP 1.1: 持久连接
+                    同一个连接
         - FTP
             基于 TCP
             端口 21
+            * 建立两个并行的TCP连接:
+            * 控制: 在客户端和服务器之间交换命令、响应 
+            * 数据: 传递文件数据
+            1. 数据连接可以双向使用.
+            2. 数据连接不必始终存在.
+            3. 控制连接采用的是telnet.
+
 
 ******************************************************************************
 rev
@@ -1258,6 +1284,7 @@ rev
     而网络传输的 Gbps 是 10**9 bits/sec
 
 2. 注意换算 字节和位, 注意大小写
+    b 和 B!
 
 3. 计算数据传输率, 
     要同时计算 Shannon 定理的答案和 Nyquist 定理的答案,
@@ -1309,3 +1336,29 @@ more conservative approach and increases the value of cwnd by just a single MSS
 every RTT [RFC 5681]. This can be accomplished in several ways. A common
 approach is for the TCPsender to increase cwnd by MSS * (MSS/cwnd) when-
 ever a new acknowledgment arrives. 
+
+******************************************************************************
+
+是否 FLAG DATA 即可
+    如果很久都没来呢
+
+重传 vs 纠错
+    重传代价太大: 传播延时太大
+    军事: 不希望暴露接收者位置
+    实时: 不允许重传
+    可靠: 不用纠错
+
+CRC:
+    all burst error with <32 length
+    all odd number of isolated errors
+    all isolated double bit errors for resonable long message
+
+Consider the operation of protocol 6 over a 1-Mbps perfect (i.e., error-free) line. The
+maximum frame size is 1000 bits. New packets are generated 1 second apart. The
+timeout interval is 10 msec. If the special acknowledgement timer were eliminated,
+unnecessary timeouts would occur. How many times would the average message be
+transmitted?
+
+    > 2: consider NAKs
+
+
