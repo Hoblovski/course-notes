@@ -93,6 +93,7 @@
         \item[Gaussian积分] $\int_{-\infty}^{\infty} e^{-t^2} \ud t = \sqrt{\pi}$
         \item[冲激函数的筛选特性] $\int_{-\infty}^{\infty} f(t) \delta(t - t_0) = f(t_0)$
         \item[冲激函数的位移特性] $f(t) * \delta(t - t_0) = f(t - t_0)$, 注意冲激函数点乘得值, 卷积得函数
+        \item[卷积的性质] 一般的卷积满足交换律, 结合律, 分配律.
     \end{description}
 
 \section{傅里叶级数}
@@ -101,6 +102,11 @@
         f(t) = a_0 + \sum_{n = 1}^{\infty} \left( a_n \cos n\omega t \,+\, b_n \sin n\omega t \right)\]
     其中$T$为函数的周期, $\omega = \frac{2\pi}{T}$.
 \paragraph{求解系数}
+    要求$n, m \in \Zset^+$, 则函数基性质为\begin{eqnarray*}
+        \int_0^{T} \sin nt\, \sin mt \ud t &=& \delta_{nm} \frac{T}{2}\\
+        \int_0^{T} \cos nt\, \cos mt \ud t &=& \delta_{nm} \frac{T}{2} \\
+        \int_0^{T} \sin nt\, \cos mt \ud t &=& 0
+    \end{eqnarray*}
     直接由函数基性质\begin{align*}
         a_0 &= \frac{1}{T} \int_T f(t) \ud t\\
         a_n &= \frac{2}{T} \int_T f(t) \cos n\omega t \,\ud t\\
@@ -111,9 +117,10 @@
         f(t) = \sum_{n = -\infty}^{\infty} F_n e^{j n \omega t},\quad n \in \Zset
     \]其中$T$为函数的周期, $\omega = \frac{2\pi}{T}$.
 \paragraph{求解系数}
-    利用函数基性质 $\int_T e^{j n \omega t} e^{j -m \omega t} \ud t = |T| \delta_{nm}$,
+    利用函数基性质 \[
+        \int_T e^{j n \omega t} e^{j (-m) \omega t} \ud t = T \delta_{nm}\]
     有\[
-        F_n = \frac{1}{|T|} \int_T f(t) e^{-j n \omega t}\]
+        F_n = \frac{1}{T} \int_T f(t) e^{-j n \omega t}\]
 
 \section{CTFT}
 \subsection{定义}
@@ -124,24 +131,33 @@
     \ICTFT[F(\omega)] = f(t) = \frac{1}{2\pi} \int_{-\infty}^{+\infty} f(t)\; e^{j \omega t} \ud t \]
 
 \paragraph{对于周期信号}
-    设周期为$T_1$, 周期信号$f$的单周期截断是$f_0$, 则有 \[
+    设周期为$T_1$, 周期信号$f$的单周期截断是$f_0$, 显然$f = f_0 * \Delta_T$,
+    则有 \[
         \CTFT[ f(t) ] = \omega_1 \Delta_{\omega_1}(\omega) \CTFT[ f_0(t) ] ,\quad \omega_1 = \frac{2\pi}{T_1}  \]
 
-\subsection{性质}
-    \begin{description}
-        \item[线性性] $\displaystyle \CTFT[\alpha f + \beta g] = \alpha \CTFT[f] + \beta \CTFT[g]$
-        \item[唯一性] $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$,
-            由此有$\displaystyle \ICTFT = \frac{1}{2\pi} \mathbf{R} \CTFT$
-        \item[对偶性] $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(-t)$ 特别注意最后的负号
-        \item[对偶性 (赫兹域)] $\displaystyle \CTFT [ F(\nu) ] = f(-t)$ 特别注意最后的负号
-        \item[反褶] $\displaystyle \CTFT[f(-t)] = F(-\omega)$
-        \item[共轭] $\displaystyle \CTFT[f^*(t)] = F^*(-\omega)$
-        \item[压阔] $\displaystyle \CTFT[f(at)] = \frac{1}{|a|} F(\frac{\omega}{a})$
-        \item[时移] $\displaystyle \CTFT[f(t + \tau)] = F(\omega) e^{j \omega \tau}$
-        \item[频移] $\displaystyle \CTFT[f(t) e^{j \omega_0 t}] = F(\omega - \omega_0)$
-        \item[微分] $\displaystyle \CTFT[\D f(t)] = j \omega F(\omega),\qquad \CTFT[-j \omega f(t)] = \D F(\omega)$
-        \item[卷积] $\displaystyle \CTFT[f g] = \frac{1}{2\pi} \CTFT[f] * \CTFT[g],\qquad \CTFT[f * g] = \CTFT[f] \CTFT[g]$
-    \end{description}
+    \begin{table}[ht!]
+    \begin{tabularx}{\textwidth}{|>{\bfseries}r  L|}
+        \Topline
+        线性性          & $\displaystyle \CTFT[\alpha f + \beta g] = \alpha \CTFT[f] + \beta \CTFT[g]$\\
+        唯一性          & $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$,
+                            由此有$\displaystyle \ICTFT = \frac{1}{2\pi} \mathbf{R} \cdot \CTFT$\\
+        对偶性          & $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(-t)$, $\displaystyle \CTFT [ F(\nu) ] = f(-t)$
+                            特别注意最后的负号\\
+        反褶            & $\displaystyle \CTFT[f(-t)] = F(-\omega)$\\
+        共轭            & $\displaystyle \CTFT[f^*(t)] = F^*(-\omega)$\\
+        压阔            & $\displaystyle \CTFT[f(at)] = \frac{1}{|a|} F(\frac{\omega}{a})$\\
+        时移            & $\displaystyle \CTFT[f(t + \tau)] = F(\omega) e^{j \omega \tau}$\\
+        频移            & $\displaystyle \CTFT[f(t) e^{j \omega_0 t}] = F(\omega - \omega_0)$\\
+        微分            & $\displaystyle \CTFT[\D f(t)] = j \omega F(\omega)$ \newline
+                            $\CTFT[-j \omega f(t)] = \D F(\omega)$\\
+        卷积            & $\displaystyle \CTFT[f g] = \frac{1}{2\pi} \CTFT[f] * \CTFT[g]$\newline
+                            $\CTFT[f * g] = \CTFT[f] \CTFT[g]$\\
+        和FS的关系      & $f(t)$是周期为$T_1$的函数, 傅里叶级数为$f(t) = \sum_n F_n e^{j n \omega_1 t}$,
+            则$F_0(n\omega_1) = T_1 F_n$, 且$F(\omega) = \sum_n 2\pi F_n \delta(\omega - n \omega_1)$\\
+        \Bottomline
+    \end{tabularx}
+    \caption{CTFT的性质}
+    \end{table}
 
     \begin{table}[ht!]
         \centering
@@ -162,6 +178,7 @@
                 $\displaystyle \frac{1}{t}$ & $\displaystyle -j \pi \sgn(\omega)$\\\hline
                 $\displaystyle \Sa(t)$ & $\displaystyle \pi G \left( \frac{\omega}{2} \right) $\\ \hline
         \end{tabular}
+        \caption{常见函数的CTFT}
     \end{table}
 
 \subsection{抽样信号}
@@ -170,6 +187,8 @@
     可以看出, 信号经过$T_S$抽样之后, 其CTFT变成一个周期为$\omega_S$的周期函数.
 \paragraph{抽样定理} 对于截止频率为$\omega_c$的信号$f(t)$, 若$\omega_S \ge 2 \omega_c$, 则$F_S$是周期为$\omega_S$的函数,
     并且$\forall \omega \in [-\frac{\omega_S}{2}, \frac{\omega_S}{2}]\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega)$. 其中$2\omega_c$称为Nyquist频率.
+
+\clearpage
 
 
 \section{DTFT}
@@ -207,22 +226,30 @@
     \end{eqnarray*}
 
     上式中$T_S$是符合Nyquist要求的采样周期, $\omega_S = \frac{2\pi}{T_S}$.
-    可以看出, 数字时间的范围是$\Zset$, 是离散的.
-\subsection{性质}
-    \begin{description}
-        \item[和CTFT关系] $\displaystyle \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S})$
-        \item[线性性] $\displaystyle \DTFT[\alpha x + \beta y] = \alpha \DTFT[x] + \beta \DTFT[y]$
-        \item[周期性] $\displaystyle X(\omega + 2\pi) = X(\omega)$
-        \item[反褶] $\displaystyle \DTFT[x(-n)] = X(-\omega)$
-        \item[共轭] $\displaystyle \DTFT[x^*(n)] = X^*(-\omega)$
-        \item[压扩] $\displaystyle \DTFT[x(n/a)] = X(a\omega), \quad a \in \Zset$
-        \item[时移] $\displaystyle \DTFT[x(n + n_0)] = X(\omega) e^{j \omega n_0}$
-        \item[频移] $\displaystyle \DTFT[x(n) e^{j \omega_0 n}] = X(\omega - \omega_0)$
-        \item[微分] $\displaystyle \DTFT[nx(n)] = j \D X(\omega)$
-        \item[卷积] $\displaystyle \DTFT[x * y] = X Y,\quad \DTFT[x y] = \frac{1}{2\pi} X * Y$\\
-            其中的卷积$X * Y$是周期函数的卷积$\int_{-pi}^{\pi} X(\vartheta) Y(\omega - \vartheta) \ud \vartheta$
-        \item[能量] $\displaystyle \ENERGY[x] = \frac{1}{2\pi} \ENERGY[DTFT[x]]$, 亦称Parseval定理
-    \end{description}
+    可以看出, 数字时间的范围是离散的$\Zset$.
+
+    \begin{table}[ht!]
+    \begin{tabularx}{\textwidth}{|>{\bfseries}r  L|}
+        \Topline
+        和CTFT关系 & $\displaystyle \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S})$
+            如果采样频率在Nyquist区间内, 则有 $X(\omega) = \frac{1}{T_S} F\left(\frac{\omega}{T_S}\right)$\\
+        线性性 & $\displaystyle \DTFT[\alpha x + \beta y] = \alpha \DTFT[x] + \beta \DTFT[y]$\\
+        周期性 & $\displaystyle X(\omega + 2\pi) = X(\omega)$\\
+        反褶 & $\displaystyle \DTFT[x(-n)] = X(-\omega)$\\
+        共轭 & $\displaystyle \DTFT[x^*(n)] = X^*(-\omega)$\\
+        压扩 & $\displaystyle \DTFT[x(n/a)] = X(a\omega), \quad a \in \Zset$\\
+        时移 & $\displaystyle \DTFT[x(n + n_0)] = X(\omega) e^{j \omega n_0}$\\
+        频移 & $\displaystyle \DTFT[x(n) e^{j \omega_0 n}] = X(\omega - \omega_0)$\\
+        微分 & $\displaystyle \DTFT[nx(n)] = j \D X(\omega)$\\
+        卷积 & $\displaystyle \DTFT[x * y] = X Y,\quad \DTFT[x y] = \frac{1}{2\pi} X * Y$
+            其中的卷积$X * Y$是周期函数的卷积$\int_{-pi}^{\pi} X(\vartheta) Y(\omega - \vartheta) \ud \vartheta$\\
+        能量 & $\displaystyle \ENERGY[x] = \frac{1}{2\pi} \ENERGY[DTFT[x]]$, 亦称Parseval定理\\
+        \Bottomline
+    \end{tabularx}
+    \caption{DTFT的性质}
+    \end{table}
+
+\clearpage
 
 \section{DFT}
 \subsection{定义}
@@ -232,8 +259,7 @@
     是Nyquist区间$[0, 2\pi)$上均匀分布的$N$个频率. 这样即得到DFT的定义
     \[
         X(k) = X(\omega_k) = \DFT[x(n)] = \sum_{n = 0}^{L - 1} x(n) W_N^{nk},\quad 0 \le k \le N - 1\]
-    为其N点DFT
-    上下文不清楚时, $\DFT$应加角标$N$. 其中$W_N$是$N$次单位根倒数$W_N = e^{- j \frac{2 \pi}{N}}$.\par
+    为其N点DFT. 其中$W_N$是$N$次单位根\emph{倒数}$W_N = e^{- j \frac{2 \pi}{N}}$.\par
     另外定义其逆变换IDFT为\[
         \hat{x}(n) = \frac{1}{N} \sum_{k = 0}^{N - 1} X(k) W_N^{-nk},\quad 0 \le n  \le N -1 \]
 
@@ -255,8 +281,9 @@
     \begin{table}[ht!]
     \begin{tabularx}{\textwidth}{|>{\bfseries}r  L|}
         \Topline
-        和DTFT的关系 &  $\DFT[x](k) = \DTFT[x](\frac{k}{N} 2\pi)$    \\
-        和CTFT的关系 &  $\DFT[x](k) = \CTFT[\mathbf{Trunc_L} f_{S}](\frac{k}{N} \omega_S)$    \\
+        和DTFT的关系 &  $\DFT[x](k) = \DTFT[x_{0\ldots L}](\frac{k}{N} 2\pi)$    \\
+        和CTFT的关系 &  $\DFT[x](k) = \CTFT[\mathbf{Trunc_L} f_{S}](\frac{k}{N} \omega_S)$\newline
+                        如果采样符合Nyquist频率, 则有$X(k) = \frac{1}{T_S} \CTFT[f_{0\ldots LT_S}] (\frac{k}{N} \omega_S)$ \\
         线性性 &  $\displaystyle \DFT[\alpha x + \beta y] = \alpha \DFT[x] + \beta \DFT[y]$    \\
         周期性 &  $\displaystyle X(k + N) = X(k)$    \\
         对偶性 &  $\displaystyle \DFT[X(k)] = N x(-n)$    \\
@@ -285,21 +312,6 @@
     \caption{DFT的例子}
     \end{table}
 
-
-\subsection{和其他傅里叶变换的关系} 参见下表.
-    \begin{table}[ht!]
-        \centering
-        \begin{tabular}{|c|c|c|}
-            \hline
-            变换 & 时域 & 频域\\ \hline
-            周期函数的FS & 连续, 周期$T_S$ & 离散, 非周期 \\ \hline
-            CTFT & 连续, 非周期 & 连续, 非周期\\ \hline
-            DTFT = CTFT冲激串抽样 & 离散, 非周期 & 连续, 周期$2\pi$\\\hline
-            DTFT时域加窗 & 离散, 定义域有限 & 连续, 周期$2\pi$\\\hline
-            DTFT时域加窗并且周期延拓 & 离散, 周期$L$ & 离散, 周期$???$ \\ \hline
-        \end{tabular}
-    \end{table}
-
 \subsection{FFT}
     原理: 设$N = 2N'$, 令$y(n) = x(2n), z(n) = x(2n+1),\quad 0 \le n \le N' - 1$, 则有\[
         \DFT_{N} [x] = \DFT_{N'} [y] + W_N^k \DFT_{N'} [z] \]
@@ -310,9 +322,6 @@
 
     Gabor transform. 短时变化: 信号加窗, 只考虑窗内信号.\par
     窗内认为频谱不变.\par
-
-% \section{TODO}
-    %DTFT->CTFT: \[ X(\omega) = \CTFT[f_{S}](:w
 
 \section{系统}
 \subsection{基本概念}
@@ -332,8 +341,10 @@
         \item[线性性] $\mathcal{F}[\alpha x + \beta y] = \alpha \mathcal{F}[x] + \beta \mathcal{F}[y]$
         \item[时不变性] $\mathcal{F}[x(n + m)](k) = \mathcal{F}[x(n)](k + m)$
         \item[因果性] $y = \mathcal{F}[x]$, 则$y(n)$是$\{ x(k) \;|\; k \le n \}$的函数
-        \item[稳定性] $y = \mathcal{F}[x]$, 若$x$是有界的, 则$y$是有界的
+        \item[稳定性] $y = \mathcal{F}[x]$, 若$x$是有界的, 则$y$是有界的.\\
+                i.e. $\|x\|_{\infty} < \infty \Rightarrow \|y\|_{\infty} < \infty$
     \end{description}
+    课程考虑的系统必定满足 线性性, 时不变性, 因果性. 如不考虑$x(n) \to x^2(n)$.
 
 \subsection{时域描述}
 \subsubsection{差分方程}
@@ -352,7 +363,8 @@
         \item 直接I型构建法. 简单明白.
         \item 级联滤波器. 减少延时单元的深度, 降低因过深的延时单元链造成的指数级误差.
         \item 直接II型构建法. 减少了对输入和输出状态的存储, 即延时单元减少.
-    \end{itemize}
+    \end{itemize}注意图\ref{dir-1}和图\ref{dir-2}中$a_k, b_k$和差分方程中的$a_k, b_k$定义不同. 下图中, 是\[
+        y(n) = \sum_{k = 0}^M a_k x(n-k) + \sum_{k = 1}^{N} b_k y(n-k)\]
     \begin{figure}[ht!]
     \centering
     \includegraphics[width=0.95\textwidth]{dir-1.png}
@@ -369,7 +381,7 @@
 \subsubsection{冲激响应}
     $\mathcal{F}[\delta(n)]$称为$\mathcal{F}$的冲激响应 (Impluse Response).
     根据冲激响应是否在有限时间内收敛到$0$, 也分为有限和无限冲激响应.\par
-    记$h(x) = \mathcal{F}[\delta]$, 因为$x(n) = \sum_k x(k) \delta(n - k) = x * \delta$,
+    记$h(n) = \mathcal{F}[\delta]$, 因为$x(n) = \sum_k x(k) \delta(n - k) = x * \delta$,
     故不严谨地有,
     \begin{align*}
         \mathcal{F}\left[x\right] &= \mathcal{F}\left[x * \delta\right] \\
@@ -381,7 +393,7 @@
 \paragraph{应用} \begin{description}
         \item[稳定定理] $\sum_n |h(n)|$绝对收敛 $\Leftrightarrow$ $\mathcal{F}$是稳定系统.
         \item[串联] 设$\mathcal{F}[\delta] = h_{\mathcal{F}},\,\mathcal{G}[\delta] = h_{\mathcal{G}}$,
-            则$\mathcal{F} \mathcal{G} [\delta] = h_{\mathcal{F}} * h_{\mathcal{G}}$
+            则$\mathcal{F} \mathcal{G} [\delta] = h_{\mathcal{G}}  * h_{\mathcal{F}} $
         \item[并联] $\left(\mathcal{F} + \mathcal{G}\right) [\delta] = h_{\mathcal{F}} + h_{\mathcal{G}}$
     \end{description}
 
@@ -390,11 +402,7 @@
 \subsubsection{定义} $X = \DTFT[x]$是信号的频域表示, $Y = \mathcal{F}[X]$,
     则定义$H(\omega) = \frac{X(\omega)}{Y(\omega)}$为滤波器的频率响应.\par
     其中将$|H(\omega)|$称为幅频响应, $\arg H(\omega)$称为相频响应.
-\paragraph{性质} \begin{description}
-    \item[和冲激响应的关系] 对$y = x * h$两边DTFT得到$Y = X \cdot \DTFT[h]$\\ 故有$H = \DTFT[h]$
-    \item[周期性] $H(\omega) = \sum_n h(n) e^{-j\omega n}$是周期函数
-    \item[共轭相反] $H(-\omega) = H^*(\omega)$
-\end{description}
+\paragraph{和冲激响应的关系} 对$y = x * h$两边DTFT得到$Y = X \cdot \DTFT[h]$\\ 故有$H = \DTFT[h]$, 其满足DTFT的所有性质.
 
 \subsection{Z变换}
 \subsubsection{定义} $x(n)$是离散时域信号,
@@ -464,9 +472,6 @@
     对于差分方程描述$\sum_{k = 0}^N a_k y(n - k) = \sum_{k = 0}^M b_k x(n - k)$, 两边做ZT即有
     \[
         H(z) = \frac{\sum_{k = 0}^N a_k z^{-k}} { \sum_{k = 0}^M b_k z^{-k}} \]
-\subsubsection{和频率响应的关系}
-    根据定义即有\[
-        H(z) = H(e^{j\omega})\]
 
 \subsection{滤波器的设计}
 \subsubsection{FIR低通滤波器的设计}
@@ -524,12 +529,50 @@
     答案是 $\left[\Sa\left(\frac{\omega - \pi}{2}\right) - \Sa\left(\frac{\omega + \pi}{2}\right)\right] \cos \frac{\omega}{2}$
 
 \section{OTHER}
-\subsection{1}
-对于$f(t)$和$T_S$, 令 $f_S(t) = f(s) \cdot \Delta_{T_S}(t)$, 令 $ x(n) = f(nT_S)$, 则有 \[
-    \DTFT[x](\omega) = \CTFT[f_S](\frac{\omega}{T_S}
-    \]
-\subsection{2}
+\subsection{卷积求法}
     序列线卷积可以撕纸来求. 注意项数要足够!\par
-    圆卷积的是先填零/回绕之后再求.
+    圆卷积的是先填零/回绕之后再求.\par
+    也可采用类似乘法的方法, 例如
+
+    \begin{table}[ht!]
+        \centering
+        \begin{tabular}{*{7}{c}}
+        x(6) & x(5) & x(4)     & x(3) & x(2) & x(1) & x(0) \\
+        \Midline
+             &      &          & 1    & 2    & 3    & 4    \\
+             &      & $\times$ & 4    & 3    & 2    & 1    \\
+        \Midline
+             &      &          & 1    & 2    & 3    & 4    \\
+             &      & 2        & 4    & 6    & 8    &      \\
+             & 3    & 6        & 9    & 12   &      &      \\
+        4    & 8    & 12       & 16   &      &      &      \\
+        \Midline
+        4    & 11   & 20       & 30   & 20   & 11   & 4    \\
+        \end{tabular}
+        \caption{线卷积}
+    \end{table}
+
+    \begin{table}[ht!]
+        \centering
+        \begin{tabular}{*{7}{c}}
+        x(6) & x(5) & x(4)     & x(3) & x(2)        & x(1)        & x(0)         \\
+        \Midline
+             &      &          & 1    & 2           & 3           & 4            \\
+             &      & $\times$ & 4    & 3           & 2           & 1            \\
+        \Midline
+             &      &          & 1    & 2           & 3           & 4            \\
+             &      & 2        & 4    & 6           & 8           &              \\
+             & 3    & 6        & 9    & 12          &             &              \\
+        4    & 8    & 12       & 16   &             &             &              \\
+        \Midline
+             &      &          & 1    & 2           & 3           & 4            \\
+             &      &          & 4    & 6           & 8           & \bfseries 2  \\
+             &      &          & 9    & 12          & \bfseries 3 & \bfseries 6  \\
+             &      &          & 16   & \bfseries 4 & \bfseries 8 & \bfseries 12 \\
+        \Midline
+             &      &          & 30   & 24          & 22          & 24           \\
+        \end{tabular}
+        \caption{圆卷积}
+    \end{table}
 
 \end{document}
