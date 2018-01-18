@@ -425,6 +425,16 @@
             &= \int_0^{2\pi} i r^{-n-m-1} e^{i \theta (m - n)} \ud \theta\\
         &= 2 \pi i r^{-n-m-1} \delta_{nm}\end{align*}
     其中假设$C$是半径为$r$的圆环, $\delta$是Kronecker delta记号.
+\subsection{唯一性}
+    Z变换不具有唯一/可逆性. 这一点可以从Laurent展开的非唯一性看出.
+    一般地, 有如下性质:
+\paragraph{Z变换级数展开}
+    如果$f(z)$的极点 (即复函数的奇点) 有$N$种不同的模 (即$N=|\{|z_p|\}|$) 则存在$N+1$个不同的信号, 使得它们的ZT都是$f(z)$.
+    若将其极点的模从小到大排成$\left\langle a_1, a_2\ldots a_N\right\rangle$, 
+    则这些信号的ROC是$\langle r1=0, r2=a_1 \rangle,\;$$\langle r1=a_1, r2=a_2\rangle\ldots$
+    $\langle r1=a_N, r2=\infty\rangle$.\par
+    例如, 对于$f(z) = \frac{1}{1- a^-1z}$, 显然$x(n) = a^n u(n)$和$y(n) = -a^n u(-n-1)$的ZT都是$f(z)$.
+    两者的收敛域分别是$\langle r1=a, r2=\infty\rangle$和$\langle r1=0, r2=a\rangle$
 \subsubsection{性质}
     \begin{center}
     \begin{tabularx}{\textwidth}{>{\bfseries}Sl  SL}
@@ -460,7 +470,9 @@
 \paragraph{留数法} 根据留数定理, 可求得$x(n) = \sum_{z_p\text{是极点}} \Res\left[X(Z) z^{n - 1}, z_p\right]$.\
     设$z_0$是$f(z)$的$n$级极点, 则$\Res[f(z), z_0] = \frac{1}{(n-1)!} \lim_{z \to z_0} \D^{n-1} \left( (z - z_0)^n f(z) \right)$.
     可以一次得到对于一个$n$的$x(n)$.
-\paragraph{有理函数展开法} 类似生成函数, 直接求根展开有理函数. 可以一次得到所有$x(n)$.
+\paragraph{有理函数展开法} 类似生成函数, 直接求根展开有理函数, 可以一次得到所有$x(n)$.
+    基本原理是, 任何有理函数$R(z^{-1}) = \frac{P(z^{-1})}{Q(z^{-1})}$可以写成一个多项式和若干$\frac{T(z^{-1})}{(1-z_pz^{-1})^l}$之和,
+        其中$T(z^{-1})$是多项式且$\deg T < l$, 并且$z_p$是$l$级极点.
 
 \subsection{系统函数}
     记$X(z) = \ZT[x], Y(z) = \ZT[y]$, 则定义\[H(z) = \frac{Y(z)}{X(z)}\]称$H(z)$为系统的响应函数.\par
