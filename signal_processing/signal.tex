@@ -73,7 +73,7 @@
             $\delta(t)$ & 单位冲激信号 $\delta(t) = \frac{1}{a} \delta(\frac{t}{a})$ \\ \Midline
             $G(t)$ & 原点单位脉冲信号, $G(t) = \begin{cases}
                 1 & -\frac{1}{2} < t < \frac{1}{2}\\
-                0 & otherwise \end{cases}$
+                0 & \text{otherwise} \end{cases}$
                 \\ \Midline
             $Sa(t$) & Sample函数, $Sa(t) = \begin{cases}
                 \frac{\sin t}{t} & t \neq 0 \\
@@ -81,7 +81,7 @@
             $\Delta_{T} (t)$ & 周期单位冲激序列, $\Delta_T(t) = \sum_{n} \delta(t - n T)$\newline
                 其有特别的性质: $\int_{\Rset} f(t) \Delta_T(t) \ud t = \sum_n f(nT)$
             \\ \Midline
-            $\delta(n)$ & 单位冲激序列 $\delta(n) = \begin{cases}1 & n = 0 \\ 0 & \text{otheriwse}\end{cases}$ \\ \Bottomline
+            $\delta(n)$ & 单位冲激序列 $\delta(n) = \begin{cases}1 & n = 0 \\ 0 & \text{otherwise}\end{cases}$ \\ \Bottomline
         \end{tabularx}
     \end{table}
 
@@ -97,6 +97,7 @@
         \item[冲激函数的筛选特性] $\int_{-\infty}^{\infty} f(t) \delta(t - t_0) = f(t_0)$
         \item[冲激函数的位移特性] $f(t) * \delta(t - t_0) = f(t - t_0)$, 注意冲激函数点乘得值, 卷积得函数
         \item[卷积的性质] 一般的卷积满足交换律, 结合律, 分配律.
+        \item[不收敛的求和] $\sum_{n = -\infty}^{+\infty} e^{-j n \omega T_1} = \omega_1 \Delta_{\omega_1}(\omega)$
     \end{description}
 
 \section{傅里叶级数}
@@ -117,19 +118,21 @@
     \end{align*}
 \subsection{复数形式的傅里叶级数}
     性质足够良好的周期函数都可以表达为\[
-        f(t) = \sum_{n = -\infty}^{\infty} F_n e^{j n \omega t},\quad n \in \Zset
-    \]其中$T$为函数的周期, $\omega = \frac{2\pi}{T}$.
+        f(t) = \sum_{n = -\infty}^{\infty} F_n e^{j n \omega t}
+    \]其中$T$为函数的周期, $\omega = \frac{2\pi}{T}$.\par
+    注意这里指数没有负号, 与傅里叶变换中形式不同.
 \paragraph{求解系数}
     利用函数基性质 \[
         \int_T e^{j n \omega t} e^{j (-m) \omega t} \ud t = T \delta_{nm}\]
     有\[
-        F_n = \frac{1}{T} \int_T f(t) e^{-j n \omega t}\]
+        F_n = \frac{1}{T} \int_T f(t) e^{-j n \omega t} \ud t\]
 
 \section{CTFT}
 \subsection{定义}
-注意信号的傅里叶变换不一定存在.
+    注意信号的傅里叶变换不一定存在. 本课程中不考虑不存在的情况.
 \paragraph{对于非周期信号} $f(t)$的CTFT定义为 \[
     \CTFT[f(t)] = F(\omega) = \int_{-\infty}^{+\infty} f(t)\; e^{-j \omega t} \ud t \]
+可以看成$f(t)$和基函数$e^{j \omega t}$的内积.\footnote{这里内积是酉空间内积, 需满足共轭交换}\par
     逆变换定义为 \[
     \ICTFT[F(\omega)] = f(t) = \frac{1}{2\pi} \int_{-\infty}^{+\infty} f(t)\; e^{j \omega t} \ud t \]
 
@@ -190,6 +193,7 @@
     可以看出, 信号经过$T_S$抽样之后, 其CTFT变成一个周期为$\omega_S$的周期函数.
 \paragraph{抽样定理} 对于截止频率为$\omega_c$的信号$f(t)$, 若$\omega_S \ge 2 \omega_c$, 则$F_S$是周期为$\omega_S$的函数,
     并且$\forall \omega \in [-\frac{\omega_S}{2}, \frac{\omega_S}{2}]\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega)$. 其中$2\omega_c$称为Nyquist频率.
+
 
 \clearpage
 
@@ -262,7 +266,7 @@
     是Nyquist区间$[0, 2\pi)$上均匀分布的$N$个频率. 这样即得到DFT的定义
     \[
         X(k) = X(\omega_k) = \DFT[x(n)] = \sum_{n = 0}^{L - 1} x(n) W_N^{nk},\quad 0 \le k \le N - 1\]
-    为其N点DFT. 其中$W_N$是$N$次单位根\emph{倒数}$W_N = e^{- j \frac{2 \pi}{N}}$.\par
+    称为其N点DFT. 其中$W_N$是$N$次单位根\emph{倒数}$W_N = e^{- j \frac{2 \pi}{N}}$.\par
     另外定义其逆变换IDFT为\[
         \hat{x}(n) = \frac{1}{N} \sum_{k = 0}^{N - 1} X(k) W_N^{-nk},\quad 0 \le n  \le N -1 \]
 
@@ -280,13 +284,17 @@
     不同的作者, 不同的上下文会选择不同的约定.
 
 \subsection{性质}
-    基本与DTFT性质相同. 此外, DFT频谱是周期函数, 周期为$N$.
+    基本与DTFT性质相同. 另外容易看出, 可以使用矩阵乘法计算DFT.\par
     \begin{table}[ht!]
     \begin{tabularx}{\textwidth}{|>{\bfseries}r  L|}
         \Topline
-        和DTFT的关系 &  $\DFT[x](k) = \DTFT[x_{0\ldots L}](\frac{k}{N} 2\pi)$    \\
-        和CTFT的关系 &  $\DFT[x](k) = \CTFT[\mathbf{Trunc_L} f_{S}](\frac{k}{N} \omega_S)$\newline
-                        如果采样符合Nyquist频率, 则有$X(k) = \frac{1}{T_S} \CTFT[f_{0\ldots LT_S}] (\frac{k}{N} \omega_S)$ \\
+        和DTFT的关系 &  $\DFT[x](k) = \DTFT[x](\frac{k}{N} 2\pi)$\newline
+                        注意DTFT参数是有限长的$x(n),\;n\in[0, L)$\newline
+                        而不是通常的$f(nT_S),\;n\in\Zset$ \\
+        和CTFT的关系 &  如果采样符合Nyquist频率, 则有\newline
+                        $X(k) \approx \frac{1}{T_S} \CTFT[f] (\frac{k}{N} \omega_S)$ \newline
+                        其中$f$是原函数, $f_{0\ldots LT_S}$是$f$截断到区间$[0, LT_S)$的函数, 
+                        $x(n) = f(nT_S)$, 不是严格等于因为加窗的引入的误差  \\
         线性性 &  $\displaystyle \DFT[\alpha x + \beta y] = \alpha \DFT[x] + \beta \DFT[y]$    \\
         周期性 &  $\displaystyle X(k + N) = X(k)$    \\
         对偶性 &  $\displaystyle \DFT[X(k)] = N x(-n)$    \\
@@ -294,8 +302,9 @@
         共轭 &  $\displaystyle \DFT[x^*(n)] = X^*(-k)$    \\
         时移 &  $\displaystyle \DFT[x(n + m)] = X(k) W_N^{km}$    \\
         频移 &  $\displaystyle \DFT[x(n) W_N^{nm}] = X(k + m)$    \\
-        卷积 &  $\displaystyle \DFT[x * y] = X Y,\quad \DFT[x y] = \frac{1}{N} X * Y$\newline
-            其中的卷积$X * Y$是周期函数的卷积$\sum_{m = 0}^{N-1} X(m) Y(n-m)$   \\
+        卷积 &  $\displaystyle \DFT[x * y] = X Y$\newline
+                $\DFT[x y] = \frac{1}{N} X * Y$\newline
+                其中的卷积$X * Y$是周期函数的卷积$\sum_{m = 0}^{N-1} X(m) Y(n-m)$   \\
         能量 &  $\displaystyle \ENERGY[x] = \frac{1}{N} \ENERGY[\DFT[x]]$, 亦称Parseval定理\\
         \Bottomline
     \end{tabularx}
@@ -316,8 +325,9 @@
     \end{table}
 
 \subsection{FFT}
-    原理: 设$N = 2N'$, 令$y(n) = x(2n), z(n) = x(2n+1),\quad 0 \le n \le N' - 1$, 则有\[
+    设$N = 2N'$, 令$y(n) = x(2n), z(n) = x(2n+1),\quad 0 \le n \le N' - 1$, 则有\[
         \DFT_{N} [x] = \DFT_{N'} [y] + W_N^k \DFT_{N'} [z] \]
+    按照此原理, 容易得到$\Theta(n \lg n)$的DFT算法, 而按定义计算是$\Theta(n^2)$的.
 
 \section{STFT}
 \subsection{时变信号} 从物理的角度, 一个信号在不同时间包含的分量是不同的.
