@@ -11,6 +11,8 @@
 
 \title{信号处理原理}
 
+\DeclareMathOperator{\CWT}{\mathbf{CWT}}
+\DeclareMathOperator{\DWT}{\mathbf{DWT}}
 \DeclareMathOperator{\CTFT}{\mathbf{CTFT}}
 \DeclareMathOperator{\ICTFT}{\mathbf{ICTFT}}
 \DeclareMathOperator{\DTFT}{\mathbf{DTFT}}
@@ -28,6 +30,7 @@
 \DeclareMathOperator{\sgn}{\mathrm{sgn}}
 \DeclareMathOperator{\Sa}{\mathrm{Sa}}
 \DeclareMathOperator{\Res}{\mathrm{Res}}
+\DeclareMathOperator{\STFT}{\mathbf{STFT}}
 
 % for simulating booktabs rules; so they work with vertical lines
 \newlength{\Oldarrayrulewidth}
@@ -317,11 +320,50 @@
         \DFT_{N} [x] = \DFT_{N'} [y] + W_N^k \DFT_{N'} [z] \]
 
 \section{STFT}
-    non-stationary signal: not ideal, F[t] should change
-        频域信号也可能会变化, 如喊话声音变化, 不同时间信号的频谱是不一样的.\par
+\subsection{时变信号} 从物理的角度, 一个信号在不同时间包含的分量是不同的.
+    如开来的火车笛声, 最开始是较高, 之后变低.
+    因此需要考虑信号在某个时间点/段的频域表示, 然而传统CTFT只在整个$\Rset$上考虑.
+\subsection{STFT}
+    对于时变信号$f(t)$, 定义其STFT为\[
+        \STFT[f(t)] = F(\tau, \omega) = \int_{-\infty}^{+\infty} f(t) w(t - \tau) e^{-j\omega t} \ud t\]
+    其中$w(t)$是窗函数.
+    课程中不知为何积分中是$w^*$, 本应是先将$f(t)$加窗之后再和傅里叶基求内积的.
+    因此为了自然这里稍有改动.
+\paragraph{窗函数相关} 显然窗函数$w$需要满足的性质是,
+    只在一个小区间$[-t_0, t_0]$中的值足够大, 此区间外都可以看成$0$.
+    这个区间的长度称为窗口大小.\par
+    显然, 窗口越小, 时间分辨率越好 i.e. $F(\tau, \omega)$越能反映在$\tau$这个点而不是其附近一片的性质;
+    窗口越大, 频率分辨率越好.\par
+    窗函数可以选择矩形窗函数, 但更常选择Gaussian窗$w(t) = e^{-\frac{t^2}{2 \sigma^2}}$
+\paragraph{和原始CTFT的关系} 显然有下式. 从中看出, STFT事实上就是信号加窗的CTFT.
+    \[ \STFT[f(t)](\tau, \omega) = \CTFT[f(t)w(\tau-t)](\omega)\]
 
-    Gabor transform. 短时变化: 信号加窗, 只考虑窗内信号.\par
-    窗内认为频谱不变.\par
+\section{Wavelet Transform}
+\subsection{基本思想}
+\subsubsection{背景}
+    STFT的问题是, 窗函数是固定的 i.e. 窗口大小不能变化.
+    即, 时间分辨率/频率分辨率不能变.\par
+    而考虑现实情况, 比如人对于一个频率范围内的声音最敏感.
+    如同样的声高变化, 在1000 Hz左右比在15000 Hz左右更容易被察觉.
+    即, 在1000 Hz 左右, 人耳的频率分辨率更高.\par
+    因此需要对于不同频率-时间点, 有不同的分辨率.
+\subsubsection{小波定义}
+    称$\psi(t)$为小波基函数, 或小波母函数, 当且仅当
+    \[ \int_{-\infty}^{+\infty} \psi(t) \ud t = 0 
+        \quad\land\quad
+        \ENERGY[\psi(t)] < \infty \]
+\paragraph{小波基的时移和压扩}
+    单个小波基类似于$e^{j\omega_0 t}$, 只包含频率信息.
+    为了让其包含时间和窗口大小信息, 实际使用的基是$
+        \psi_{s\tau}(t) = \frac{1}{\sqrt{s}} \psi\left(\frac{t-\tau}{s}\right) $\par
+    可以看出, 时移用于确定时间; 压阔用于控制在这个时间-频率点上, 窗函数的大小;
+    而$\frac{1}{\sqrt{s}}$用来使得能量不变.
+\subsubsection{连续小波变换}
+    类似所有的基分解思想, $f(t)$与基$\psi_{s\tau}(t)$内积得到分量值, 如下式所示
+    \[
+        \CWT[f(t), \psi(t)](s, \tau) = \int_{-\infty}^{+\infty} f(t) \psi^*_{s\tau}(t) \ud t
+    \]
+    其中频域信息$\omega$被包含在了$\psi(t)$中.
 
 \section{系统}
 \subsection{基本概念}
@@ -416,6 +458,8 @@
         \sum_n x(n)z^{-n}\;\text{收敛} \Leftrightarrow
         \sum_n x(n)z^{-n}\;\text{绝对收敛} \]
     收敛环可以通过比值法或根值法求出.
+\paragraph{零-极点图}  在复平面上用$\times$表示极点,
+    $O$表示零点, 画出所有零点和极点, 即得到零-极点图.
 \subsection{函数空间的理解}
     可以认为, 基函数是$u_n(z) = z^{-n},\,n \in \Zset$, 由Laurent级数容易得到基函数的完备性.\par
     设$C$是任何一个以$O$为圆心的圆环, 内积定义为\begin{align*}
@@ -430,7 +474,7 @@
     一般地, 有如下性质:
 \paragraph{Z变换级数展开}
     如果$f(z)$的极点 (即复函数的奇点) 有$N$种不同的模 (即$N=|\{|z_p|\}|$) 则存在$N+1$个不同的信号, 使得它们的ZT都是$f(z)$.
-    若将其极点的模从小到大排成$\left\langle a_1, a_2\ldots a_N\right\rangle$, 
+    若将其极点的模从小到大排成$\left\langle a_1, a_2\ldots a_N\right\rangle$,
     则这些信号的ROC是$\langle r1=0, r2=a_1 \rangle,\;$$\langle r1=a_1, r2=a_2\rangle\ldots$
     $\langle r1=a_N, r2=\infty\rangle$.\par
     例如, 对于$f(z) = \frac{1}{1- a^-1z}$, 显然$x(n) = a^n u(n)$和$y(n) = -a^n u(-n-1)$的ZT都是$f(z)$.
@@ -541,7 +585,7 @@
     考虑$f(t) = \sin(\pi t) \cdot \left( G(t-0.5) + -G(-t+0.5) \right)$\par
     答案是 $\left[\Sa\left(\frac{\omega - \pi}{2}\right) - \Sa\left(\frac{\omega + \pi}{2}\right)\right] \cos \frac{\omega}{2}$
 
-\section{OTHER}
+\section{其他技巧}
 \subsection{卷积求法}
     序列线卷积可以撕纸来求. 注意项数要足够!\par
     圆卷积的是先填零/回绕之后再求.\par
