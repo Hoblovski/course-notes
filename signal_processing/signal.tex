@@ -374,6 +374,42 @@
         \CWT[f(t), \psi(t)](s, \tau) = \int_{-\infty}^{+\infty} f(t) \psi^*_{s\tau}(t) \ud t
     \]
     其中频域信息$\omega$被包含在了$\psi(t)$中.
+\subsubsection{Haar小波变换}
+    Haar小波变换用于图像编码, 利用了差分思想.
+\paragraph{1维情况} 考虑长度为$l = 2^n$的整向量$ \mathbf{v}$, 则定义其2元差分Haar变换为
+    \begin{eqnarray*}
+        \mathrm{HT}(\mathbf{v}) &=&
+            \mathrm{HT}\left(\left\langle \frac{v_1+v_2}{2} \ldots \frac{v_{l-1} + v_{l}}{2} \right\rangle\right)
+            \|  \left\langle \frac{v_1-v_2}{2} \ldots \frac{v_{l-1}-v_{l}}{2}\right\rangle\\
+        \mathrm{HT}\left(\left\langle v_1 \right\rangle\right) &=& \left\langle v_1 \right\rangle
+    \end{eqnarray*}显然这是一个可逆变换.\par
+
+\paragraph{2维情况} 只考虑灰度图像$I_{n\times m}$, 其中要求$m$是$2$的幂.
+    事先选取一个阈值$\delta$, 认为小于$\delta$的差分值就是0. 之后按照如下步骤编码
+    \begin{enumerate}
+        \item 对所有行执行上述1位Haar小波变换
+        \item 对所有列执行上述1位Haar小波变换
+        \item (有损压缩) 将$I$中所有模小于$\delta$的数置零
+    \end{enumerate}
+    对结果依次执行列/行Haar逆变换就得到压缩后的图像.
+        
+\paragraph{Haar变换的矩阵描述} 为方便, 考虑1维情形, $n=8$.
+    迭代计算Haar变换, 第一次得到结果是
+    $\left\langle \frac{v_1+v_2}{2}, \frac{v_3+v_4}{2}, \frac{v_5+v_6}{2}, \frac{v_7+v_8}{2},
+        \frac{v_1-v_2}{2}, \frac{v_3-v_4}{2}, \frac{v_5-v_6}{2}, \frac{v_7-v_8}{2}\right\rangle$.\par
+    其等于$\left[ v_1, v_2, v_3, v_4, v_5, v_6, v_7, v_8\right] H_1$, 其中
+    \[
+        H_1 = \begin{bmatrix}
+        \frac{1}{2} & 0           & 0           & 0           & \frac{1}{2}  & 0            & 0            & 0            \\
+        \frac{1}{2} & 0           & 0           & 0           & -\frac{1}{2} & 0            & 0            & 0            \\
+                  0 & \frac{1}{2} & 0           & 0           & 0            & \frac{1}{2}  & 0            & 0            \\
+                  0 & \frac{1}{2} & 0           & 0           & 0            & -\frac{1}{2} & 0            & 0            \\
+                  0 & 0           & \frac{1}{2} & 0           & 0            & 0            & \frac{1}{2}  & 0            \\
+                  0 & 0           & \frac{1}{2} & 0           & 0            & 0            & -\frac{1}{2} & 0            \\
+                  0 & 0           & 0           & \frac{1}{2} & 0            & 0            & 0            & \frac{1}{2}  \\
+                  0 & 0           & 0           & \frac{1}{2} & 0            & 0            & 0            & -\frac{1}{2} \\
+        \end{bmatrix}
+    \]同理可以构造$H_2$等, 且可证$H_i$可逆.
 
 \section{系统}
 \subsection{基本概念}
