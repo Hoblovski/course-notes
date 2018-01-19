@@ -75,7 +75,7 @@
                 1 & -\frac{1}{2} < t < \frac{1}{2}\\
                 0 & \text{otherwise} \end{cases}$
                 \\ \Midline
-            $Sa(t$) & Sample函数, $Sa(t) = \begin{cases}
+            $\Sa(t$) & Sample函数, $\Sa(t) = \begin{cases}
                 \frac{\sin t}{t} & t \neq 0 \\
                 1 & t = 0 \end{cases}$ \\ \Midline
             $\Delta_{T} (t)$ & 周期单位冲激序列, $\Delta_T(t) = \sum_{n} \delta(t - n T)$\newline
@@ -92,7 +92,7 @@
     对于离散函数, $\POWER[x(t)] = \lim_{N \to \infty} \frac{1}{2N + 1} \sum_{n = -N}^{N} \|x(n)\|^2$.
 \subsection{其他}
     \begin{description}
-        \item[Dirichlet积分] $\int_{-\infty}^{\infty} Sa(t) \ud t = \pi$
+        \item[Dirichlet积分] $\int_{-\infty}^{\infty} \Sa(t) \ud t = \pi$
         \item[Gaussian积分] $\int_{-\infty}^{\infty} e^{-t^2} \ud t = \sqrt{\pi}$
         \item[冲激函数的筛选特性] $\int_{-\infty}^{\infty} f(t) \delta(t - t_0) = f(t_0)$
         \item[冲激函数的位移特性] $f(t) * \delta(t - t_0) = f(t - t_0)$, 注意冲激函数点乘得值, 卷积得函数
@@ -146,7 +146,8 @@
         \Topline
         线性性          & $\displaystyle \CTFT[\alpha f + \beta g] = \alpha \CTFT[f] + \beta \CTFT[g]$\\
         唯一性          & $\displaystyle \ICTFT[ \, \CTFT[f(t)] ] = f(t)$,
-                            由此有$\displaystyle \ICTFT = \frac{1}{2\pi} \mathbf{R} \cdot \CTFT$\\
+                            由此有$\displaystyle \ICTFT = \frac{1}{2\pi} \mathbf{R} \cdot \CTFT$, 
+                            其中$\mathbf{R}$是反转算子\\
         对偶性          & $\displaystyle \CTFT [ \, \CTFT[ f(t) ] ] = 2 \pi f(-t)$, $\displaystyle \CTFT [ F(\nu) ] = f(-t)$
                             特别注意最后的负号\\
         反褶            & $\displaystyle \CTFT[f(-t)] = F(-\omega)$\\
@@ -172,7 +173,7 @@
                 $\displaystyle e^{-at}\,u(t),\quad a > 0$ & $\displaystyle \frac{1}{a + j \omega}$ \\ \hline
                 $\displaystyle e^{at}\,u(t),\quad a \in \Rset$ & 不存在 \\ \hline
                 $\displaystyle e^{j \omega_0 t},\quad a \in \Rset$ & $\displaystyle 2 \pi \delta(\omega - \omega_0)$ \\ \hline
-                $\displaystyle G(t)$ & $\displaystyle Sa(\omega / 2)$ \\ \hline
+                $\displaystyle G(t)$ & $\displaystyle \Sa(\omega / 2)$ \\ \hline
                 $\displaystyle \delta(t)$ & $\displaystyle 1$ \\ \hline
                 $\displaystyle 1$ & $\displaystyle 2\pi \delta(\omega)$ \\ \hline
                 $\displaystyle u(t)$ & $\displaystyle \pi\delta(\omega) + \frac{1}{j\omega}$ \\ \hline
@@ -192,10 +193,13 @@
 \paragraph{抽样过程} 自然地, 采用冲激串抽样 $f_S(T) = f(t)\cdot \Delta_{T_S}(t)$
 \paragraph{抽样后傅里叶变换} $F_S(\omega) = \CTFT[ f_S(t) ] = \frac{1}{T_S} \sum_n F(\omega - n \omega_S)$.
     可以看出, 信号经过$T_S$抽样之后, 其CTFT变成一个周期为$\omega_S$的周期函数.
-\paragraph{抽样定理} 对于截止频率为$\omega_c$的信号$f(t)$, 若$\omega_S \ge 2 \omega_c$, 则$F_S$是周期为$\omega_S$的函数,
-    并且\[\forall \omega \in [-\frac{\omega_S}{2}, \frac{\omega_S}{2}]\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega)\]
-    其中$2\omega_c$称为Nyquist频率.
-    容易通过上面的和式证明.
+\paragraph{抽样定理} 容易通过上面的和式证明如下定理.
+    对于截止频率为$\omega_c$的信号$f(t)$, 若$\omega_S \ge 2 \omega_c$, 则$F_S$是周期为$\omega_S$的函数,
+    并且\[
+        \forall \omega\in\Rset\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega \bmod \omega_S)\]
+    其一个重要特例就是
+    $\forall \omega \in [-\frac{\omega_S}{2}, \frac{\omega_S}{2}]\;:\;F_S(\omega) = \frac{1}{T_S} F(\omega)$.
+    其中$2\omega_c$称为Nyquist频率. 
 \subsubsection{抽样应用}
 \paragraph{欠采样} 事实上, 利用$F_S(\omega) = \frac{1}{T_S} \sum_n F(\omega - n\omega_S)$,
     可以使用低于Nyquist频率的采样, 得到无损结果.
@@ -261,7 +265,7 @@
         微分 & $\displaystyle \DTFT[nx(n)] = j \D X(\omega)$\\
         卷积 & $\displaystyle \DTFT[x * y] = X Y,\quad \DTFT[x y] = \frac{1}{2\pi} X * Y$
             其中的卷积$X * Y$是周期函数的卷积$\int_{-pi}^{\pi} X(\vartheta) Y(\omega - \vartheta) \ud \vartheta$\\
-        能量 & $\displaystyle \ENERGY[x] = \frac{1}{2\pi} \ENERGY[DTFT[x]]$, 亦称Parseval定理\\
+        能量 & $\displaystyle \ENERGY[x] = \frac{1}{2\pi} \ENERGY[\DTFT[x]]$, 亦称Parseval定理\\
         \Bottomline
     \end{tabularx}
     \caption{DTFT的性质}
@@ -283,8 +287,8 @@
 
 \subsection{补零和回绕} 对于$L \neq N$的$x(n)$, 可以通过补零和回绕, 得到一个$L = N$的$\hat{x}(n)$, 满足$\hat{X}(k) = X(k)$.
     注意补零和回绕只会改变$L$.
-\paragraph{补零} 如果$L < N$, 考虑$\hat{x}(n) = \begin{cases} x(n) & 0 \le n \le L - 1\\ 0 & otherwise \end{cases}$
-\paragraph{回绕} 如果$L > N$, 考虑$\hat{x}(n) = \begin{cases} \sum_m x(n + mN) & 0 \le n \le N - 1 \\ 0 & otherwise \end{cases}$\par
+\paragraph{补零} 如果$L < N$, 考虑$\hat{x}(n) = \begin{cases} x(n) & 0 \le n \le L - 1\\ 0 & \text{otherwise} \end{cases}$
+    \paragraph{回绕} 如果$L > N$, 考虑$\hat{x}(n) = \begin{cases} \sum_m x(n + mN) & 0 \le n \le N - 1 \\ 0 & \text{otherwise} \end{cases}$\par
     由定义, 从IDFT只能得到回绕序列$\hat{x}$, 即DFT不满足唯一性 $\IDFT[\DFT [x]] \neq x$. 但是在$N = L$的情况下, DFT仍然满足唯一性.
 \paragraph{信号在时间上的约定}
     归一化情况下, 对于$n < 0$或者$n \ge L$, $x(n)$的取值有多种约定 \begin{enumerate}
@@ -295,8 +299,8 @@
     不同的作者, 不同的上下文会选择不同的约定.
 
 \subsection{和诸傅里叶变换的相关性}
-\paragraph{和DTFT} DFT可以看成DTFT抽样, 当然这里不是冲激串抽样;
-    DFT只取Nyquist区间中等间距的$N$个点$\frac{k}{N}2\pi$.
+\paragraph{和DTFT} DFT可以看成DTFT抽样,
+    其只取Nyquist区间中等间距的$N$个点$\frac{k}{N}2\pi$.
     因此$N$越大, DFT越接近DTFT.
 \paragraph{和CTFT} CTFT经过可能有损失的时域抽样和有损失的加窗, 以及频域抽样到DFT,
     损失了很多信息. 引入的误差包括  \begin{itemize}
@@ -328,7 +332,8 @@
                         $X(k) \approx \frac{1}{T_S} \CTFT[f] (\frac{k}{N} \omega_S)$ \newline
                         其中$f$是原函数, $f_{0\ldots LT_S}$是$f$截断到区间$[0, LT_S)$的函数, 
                         $x(n) = f(nT_S)$, 不是严格等于因为加窗的引入的误差  \\
-        和FS的关系 & TODO\\
+        和FS的关系 &    TODO: check (课件上写的, 时间缘故我没还有证明)\newline
+                        $\frac{1}{N} X(k) = F_k$, 要求$f$是周期的, 一个周期抽样$N$个点, 为$N$点DFT.  \\
         线性性 &  $\displaystyle \DFT[\alpha x + \beta y] = \alpha \DFT[x] + \beta \DFT[y]$    \\
         周期性 &  $\displaystyle X(k + N) = X(k)$    \\
         对偶性 &  $\displaystyle \DFT[X(k)] = N x(-n)$    \\
@@ -410,7 +415,7 @@
     其中频域信息$\omega$被包含在了$\psi(t)$中.
 \subsubsection{Haar小波变换}
     Haar小波变换用于图像编码, 利用了差分思想.
-\paragraph{1维情况} 考虑长度为$l = 2^n$的整向量$ \mathbf{v}$, 则定义其2元差分Haar变换为
+\paragraph{1维情况} 考虑长度为$l = 2^n$的整向量$ \mathbf{v}$, 则定义其2元差分Haar变换 (下称1维Haar变换或直接Haar变换) 为
     \begin{eqnarray*}
         \mathrm{HT}(\mathbf{v}) &=&
             \mathrm{HT}\left(\left\langle \frac{v_1+v_2}{2} \ldots \frac{v_{l-1} + v_{l}}{2} \right\rangle\right)
@@ -538,8 +543,8 @@
         \sum_n x(n)z^{-n}\;\text{收敛} \Leftrightarrow
         \sum_n x(n)z^{-n}\;\text{绝对收敛} \]
     收敛环可以通过比值法或根值法求出.
-\paragraph{零-极点图}  在复平面上用$\times$表示极点,
-    $O$表示零点, 画出所有零点和极点, 即得到零-极点图.
+\paragraph{零--极点图}  在复平面上用$\times$表示极点,
+    $\circ$表示零点, 画出所有零点和极点, 即得到零--极点图.
 \subsection{函数空间的理解}
     可以认为, 基函数是$u_n(z) = z^{-n},\,n \in \Zset$, 由Laurent级数容易得到基函数的完备性.\par
     设$C$是任何一个以$O$为圆心的圆环, 内积定义为\begin{align*}
@@ -557,7 +562,7 @@
     若将其极点的模从小到大排成$\left\langle a_1, a_2\ldots a_N\right\rangle$,
     则这些信号的ROC是$\langle r1=0, r2=a_1 \rangle,\;$$\langle r1=a_1, r2=a_2\rangle\ldots$
     $\langle r1=a_N, r2=\infty\rangle$.\par
-    例如, 对于$f(z) = \frac{1}{1- a^-1z}$, 显然$x(n) = a^n u(n)$和$y(n) = -a^n u(-n-1)$的ZT都是$f(z)$.
+    例如, 对于$f(z) = \frac{1}{1- a^{-1}z}$, 显然$x(n) = a^n u(n)$和$y(n) = -a^n u(-n-1)$的ZT都是$f(z)$.
     两者的收敛域分别是$\langle r1=a, r2=\infty\rangle$和$\langle r1=0, r2=a\rangle$
 \subsubsection{性质}
     \begin{center}
@@ -595,14 +600,16 @@
     设$z_0$是$f(z)$的$n$级极点, 则$\Res[f(z), z_0] = \frac{1}{(n-1)!} \lim_{z \to z_0} \D^{n-1} \left( (z - z_0)^n f(z) \right)$.
     可以一次得到对于一个$n$的$x(n)$.
 \paragraph{有理函数展开法} 类似生成函数, 直接求根展开有理函数, 可以一次得到所有$x(n)$.
-    基本原理是, 任何有理函数$R(z^{-1}) = \frac{P(z^{-1})}{Q(z^{-1})}$可以写成一个多项式和若干$\frac{T(z^{-1})}{(1-z_pz^{-1})^l}$之和,
+    基本原理是, 任何有理函数$R(z^{-1}) = \frac{P(z^{-1})}{Q(z^{-1})}$
+    可以写成一个多项式$S(z^{-1})$和若干$\frac{T(z^{-1})}{(1-z_pz^{-1})^l}$之和,
         其中$T(z^{-1})$是多项式且$\deg T < l$, 并且$z_p$是$l$级极点.
 
 \subsection{系统函数}
     记$X(z) = \ZT[x], Y(z) = \ZT[y]$, 则定义\[H(z) = \frac{Y(z)}{X(z)}\]称$H(z)$为系统的响应函数.\par
 \paragraph{性质} 频率响应基本相同, 另有\begin{description}
         \item[因果性] $H(z)$是因果系统的充要条件是其收敛域无界, 即$r2 = \infty$
-        \item[稳定性] $H(z)$是稳定系统的充要条件是其在单位圆上绝对收敛, 即$r1 < 1$
+        \item[不唯一性] 不同的系统可能有同样的系统函数, 但是ROC不同
+        \item[稳定性] 某系统是稳定系统的充要条件是单位圆环在其系统函数的ROC内部.
     \end{description}
 \subsubsection{和差分方程的关系}
     对于差分方程描述$\sum_{k = 0}^N a_k y(n - k) = \sum_{k = 0}^M b_k x(n - k)$, 两边做ZT即有
