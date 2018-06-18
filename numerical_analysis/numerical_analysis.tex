@@ -1,0 +1,452 @@
+%\tmp hw
+%   7/
+%       2[13] 4 6 9 10
+%\endtmp
+
+\documentclass{ctexart}
+
+\title{数值分析}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+
+\newcommand{\Rset}{\mathbb{R}}
+\newcommand{\Cset}{\mathbb{C}}
+\newcommand{\Zset}{\mathbb{Z}}
+\newcommand{\Nset}{\mathbb{N}}
+\newcommand{\ud}{\,\mathrm{d}\,}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\section*{基本信息}
+\paragraph{评分} 考试 60\%; 作业和实验和课堂测验 40\%.
+
+\section{引论}
+\subsection{基本概念}
+\paragraph{数值分析的对象} 对于某个实际问题, 研究将其数学模型通过数值计算方法, 编写程序求解.
+
+\subsection{误差分析}
+    模型和数据的错误或偏差不在数值分析的研究范围内.
+    \begin{itemize}
+        \item 截断 (方法) 误差. 如使用$|x|$代替$\sin x$.
+        \item 舍入 (浮点) 误差
+    \end{itemize}
+\subsubsection{误差定义}
+    记$x$为准确, $x^*$为近似值. 有以下三种方法描述近似数和误差.
+\paragraph{绝对误差}
+    则定义$e^* = x^* - x$为绝对误差, 其可正可负;
+        称$e^*$的上界为绝对误差限, 记为$\epsilon^*$.
+    绝对误差的值通常是不可得到的, 但是绝对误差限通常可以通过度量仪器的参数得到.\par
+% 记号note: x = 1000 \pm 1: 测量值是1000的时候; 误差限是 1
+\paragraph{相对误差}
+    定义相对误差$e^*_r = \frac{e^*}{x}$;
+    但在相对误差较小时, 常取$e^*_r = \frac{e^*}{x^*}$为相对误差.
+    同样地定义相对误差限$\epsilon^*_r = |\frac{\epsilon^*}{x^*}|$.\par
+\paragraph{有效数字}
+    准确数通过四舍五入原则得到的近似数, 其前几位都为有效数字.
+    误差一定不会超过有效数字末位单位的一半, 如
+        $|3.14 - \pi| \le \frac{1}{2} \times 0.01$.
+    定义近似数$x^*$的规范化表示为$x^* = m \times 10^l$,
+    其中$1 \le m < 10,\; m = \sum_{-n < k \le 0} a_k 10^{-k}$.
+    则$|e^*| \le \frac{1}{2} \times 10^{l-n+1}$.
+\paragraph{有效数字和误差的关系} 有效数字确定了相对误差限的上界,
+    相对误差限确定了有效数字的下界.
+\subsubsection{运算过程的误差分析}
+    对于$A=f(\vec{x}),\;A^*=f(x^*)$, 对于Taylor展开取线性项\[
+        A^*-A \approx \sum \frac{\partial f^*}{\partial x_i} x^*_i\]
+    同理可以得到相对误差的计算
+
+\subsection{定性分析}
+\subsubsection{病态问题和条件数}
+    对于函数的计算, 微小的输入误差导致很大的输出误差, 则称其为病态问题.
+    形式化地, 定义条件数$C_p$为输出相对误差和输入相对误差的比,
+    如果$C_p$很大, 相当于病态问题.
+\subsubsection{数值稳定性}
+% 例 计算 $I_n = e^{-1} \int_0^1 x^n e^x \ud x$, 并估计误差
+% 通过分部积分 $I_n = 1 - n I_{n-1}$, $I_n$非负严格单减.
+% 边界条件为 $I_0 = 1 - e^-1,\; I_{\infty} = 0$.
+% 考虑两种方法: 1. 从$I_0$开始递推, $I_n = 1 - n I_{n-1}$
+% 2. 从某个$I_n$开始向前递推, $I_{n-1} = \frac{1-I_n}{n}$.
+%   其中$I_n$由不等式$\frac{e^{-1}}{n+1} < I_n < \frac{1}{n+1}$估算.
+% 法1的误差非常大: 初始$I_0$有误差, 过程有误差. 可以考虑$I^*_n$同样列出递推式
+%   这里我们不考虑每一步引入的误差, 只考虑计算初始的误差.
+%   当然考虑每一步引入的误差也可以得到类似的结果
+% 容易得到$|\frac{E_n^*}{E_{n-1}^*}| = n!$, 误差放大很严重.
+% 这种情况下称法1是数值不稳定的算法.
+
+\subsection{算法设计技术}
+\paragraph{多项式求值} 秦九韶算法. 减少乘除法.
+
+
+
+\section{插值法}
+\subsection{基本概念}
+\paragraph{插值问题} 给定点$x_0, x_1\ldots x_n$, 以及$y_0,y_1\ldots y_n$,
+    并且$y_i = f(x_i$, $f$是某一个未知的函数.
+    求一条曲线$y=p(x)$其严格通过$(x_0,y_0), (x_1,y_1)\ldots$.\par
+    其中称$p$是$f$的插值函数, $\langle x_i \rangle$称为插值节点.\par
+    注意插值问题和拟合问题的区别.
+\paragraph{插值方法} 通常有多项式插值, 三角函数, 有理函数, 样条函数等等.
+    事实上任何函数簇, 只要在被插值节点的值线性无关, 都可以用于插值.
+\subsection{高次多项式插值}
+    求一个多项式$p$作为$f$的插值函数.
+\paragraph{朴素方法} 设$p(x) = \sum_{0 \le i < n} a_i x^i$后解线性方程组.
+\subsubsection{Lagrange插值}
+% 思考: 显然 n=2 时直接是一条直线, 可以表示为
+% $y = \frac{x-x_2}\frac{x_1-x_2}\cdot y_1 + \frac{x-x_1}{x_2-x_1}\cdot y_2$
+% 相当于两个函数相加, 每个在且只在一个$x_i$非0且为$y_i$.
+% 这样推广到$n\in\Nset$就有Lagrange插值.
+%   Lagrange插值基函数$p_i$满足$p_i(x_j) = \delta_{ij}$, 其中$\delta$是Kronecker delta函数.
+%   注意基函数的取值只能是0或1, 而不是$y_i$, 即基函数是布尔函数
+
+    形如$p(x) = L_n(x) = \sum_{i=0}^n y_i l_i(x)$的插值多项式称为Lagrange插值多项式,
+    其中$l_i(x_j) = \delta_{ij}$.
+    易得 $l_i(x) = \prod_{j \neq i} \frac{x - x_j}{x_i - x_j}$.\par
+    记$\omega_{n+1}(x) = \prod_i (x-x_i)$,
+    则有$l_i(x) = \frac{\omega_{n+1}(x)}{(x-x_i) \omega'_{n+1}(x)}$.
+\paragraph{存在唯一性}
+    当$x_i$互异时, 由Vandermonde矩阵的可逆性,
+    $x^0,\ldots x^{n-1}$的线性组合组成的插值多项式必定存在唯一.\par
+    由代数基本定理, 此多项式一定和我们$L_n(x)$相等.
+\paragraph{误差估计}
+    余项$R_n(x) = f(x) - L_n(x) = \frac{f^{(n+1)}(\xi)}{(n+1)!} \omega_{n+1}(x)$.
+    其中$f$在插值区间上$n$次连续可微, $n+1$次可微, $\xi$ 与 $x$ 有关.
+\subsubsection{Newton插值}
+% Lagrange插值的问题是, 每次加入新的点就需要重新完整计算.
+% Newton插值采用一种增量的方式
+\paragraph{均差}
+    均差$f[x_0, x_1, \ldots x_n]$定义如下 \begin{align*}
+        f[x_0, x_1] &= \frac{f(x_1) - f(x_0)}{x_1 - x_0}\\
+        f[x_0\ldots x_n] &=\frac{f[x_1,x_2,\ldots x_n] - f[x_0,x_1,\ldots,x_{n-1}]}{x_n-x_0}
+    \end{align*}
+    均差有如下性质\begin{itemize}
+        \item $f[x_0,x_1,\ldots x_n] = \sum_{0\le i\le n} \frac{f(x_i)}{\prod_{j\neq i} (x_i-x_j)}$\\
+            因此诸$x_i$的顺序对$f[x_0,x_1,\ldots x_n]$的值没有影响.
+        \item $f[x_0,\ldots x_n] = \frac{f^{(n)}(\xi)}{n!}$\\
+            因此若$\deg f < n$, 则$f[x_0,\ldots x_n] = 0$.
+    \end{itemize}
+\paragraph{Newton插值}
+    通过均差的定义可以得到Newton插值基本公式 \begin{align*}
+    f(x) =& f(x_0) + f[x_0,x_1] (x-x_0) + \ldots
+        + f[x_0,\ldots x_n] \prod_{0\le i<n}(x-x_i) \\
+        &+ f[x, x_0,\ldots x_n] \prod_i (x-x_i)
+    \end{align*}
+    其中第一行$P_n(x) = f(x_0) + f[x_0,x_1] (x-x_0) + \ldots
+        + f[x_0,\ldots x_n] \prod_{0\le i<n}(x-x_i)$为插值多项式,
+    第二行$R_n(x) = f[x, x_0,\ldots x_n] \prod_i (x-x_i)$为余项.
+\paragraph{Newton后项插值}
+    对于特殊的$x_i$等间距的情况$x_i = x_0 + ih$, 记$f_k = f(x_0+kh)$. 定义如下算子\begin{align*}
+        \mathbf{I} f_k &= f_k\\
+        \mathbf{E} f_k &= f_{k+1}\\
+        \Delta f_k & = (\mathbf{E} - \mathbf{I}) f_k = f_{k+1}-f_k
+    \end{align*}
+    归纳易得 $f[x_0,x_1,\ldots x_n] = \frac{1}{n!} h^{-n} \Delta^n f_k$.\par
+    代入原始Newton插值有 \[
+        P_n(x_0 + th) = \sum_{0\le i\le n} \Delta^i f_0 \frac{t^{\underline{i}}}{i!}\]
+\subsubsection{Hermite插值}
+\paragraph{概念}
+    在插值节点 $(x_i, y_i)$ 上要求 $p(x_i) = y_i$ 以外,
+    还要求导数值相等即 $p'(x_k) = f'(x_k)$.\par
+    不给出一般的 Hermite 插值的讨论,
+    但是显然可以对特定的问题求 Hermite 插值.
+\subsubsection{高次插值的一般性质}
+    以上的高次插值可以看出有如下的优点 \begin{itemize}
+        \item 易于构造
+        \item 使用方便
+        \item 光滑性好 ($C^n$连续)
+    \end{itemize}
+    但是缺点也如 \begin{itemize}
+        \item 不收敛, 如对于 Runge 的经典例子 $\frac{1}{1+x^2}$.
+        \item 引入不需要的驻点, 凹凸性不好
+        \item 数值稳定性不好, 计算系数误差变大
+    \end{itemize}
+
+\subsection{分段低次插值}
+\subsubsection{分段线性插值}
+    将 $(x_0,y_0), (x_1,y_1),\ldots (x_n,y_n)$ 用折线依次连接,
+    每个区间 $[x_i,x_{i+1}]$ 都是一条线段
+    $(x_i,y_i) \to (x_{i+1},y_{i+1})$.\par
+    有一致收敛性.
+\subsubsection{分段三次Hermite插值}
+    要求不仅给出 $y_i = f(x_i)$, 还要给出 $y'_i = f'(x_i)$.
+    在此前提下, 要求插值函数 $I_{n+1}$ 满足
+    $I(x_i) = y_i,\;I'(x_i) = y'_i$,
+    且在每個区间 $[x_i,x_{i+1}]$ 上 $I$
+    都是三次函数 $a_ix^3+b_ix^2+c_ix+d_i$.
+\paragraph{分区间表示}
+    如式 (5.3), 即对于每個 $[x_i,x_{i+1}]$ 都给出一个表达式.
+\paragraph{整体表示}
+    $I(x) = \sum_{i=0}^n f_i\alpha_i(x) + f'_i\beta_i(x)$
+    和对 $n+1$ 个节点整体插值的结果形式一样,
+    但是 $\alpha, \beta$ 不同
+    整体插值的 $\alpha, \beta$ 是高次多项式, 而分段 Hermite 是逐段三次多项式. 则要求有 \begin{align*}
+        \alpha_i(x_j) &= \delta_{ij}\\
+        \beta_i(x_j) &= 0\\
+        \alpha'_i(x_j) &= 0\\
+        \beta'_i(x_j) &= \delta_{ij}
+    \end{align*}
+\paragraph{余项}
+    通过 Hermite 插值的分析, 容易得到
+    $\max |R(x)| \le \frac{h^4}{384} \max |f^{(4)}(x)|$, 其中
+    $h = \max (x_{k+1} - x_k)$.
+\paragraph{问题}
+    实际中很难给出 $y'_k$, 通常只知道 $y_k$.
+\subsubsection{三次样条插值}
+    给定$(x_i,y_i)$, 要求插值函数满足\begin{itemize}
+        \item 在每段区间中是次数不大于3的多项式
+        \item 在插值区间上 $C^2$ 连续 (即在 $x_i$ 满足 $C^2$ 连续即可)
+    \end{itemize}
+
+
+
+\section{函数逼近}
+\subsection{函数线性空间}
+% $x_1, x_2 \ldots x_n$ 是空间 $S$ 的一组基则记为 $S = span\{x_1\ldots x_n\}$.
+\subsubsection{范数}
+    线性空间 $S$ 的元素到 $\Rset$ 的映射 $\|\cdot\|$, 满足如下性质 \begin{align*}
+        \| x \| & \ge 0,\quad \|x\| = 0 \Leftrightarrow x = \mathbf{0}\\
+        \|ax\| &= a\|x\|,\; a \in \Rset\\
+        \|x+y\| &\le \|x\| + \|y\|
+    \end{align*} 则称为 $S$ 上的范数. $S$ 称为赋范数空间.\par
+\paragraph{连续函数的范数}
+    常见地, 对 $f \in C[a,b]$ 有定义 \[
+        \| f \|_n = \left(\int_a^b |f^n(x)| \ud x\right)^{1/n}\]
+    特别的, $\|f\|_{\infty} = \max |f(x)|$.
+
+\subsubsection{内积}
+    考虑 $\Rset$ 或者 $\Cset$ 上的线性空间 $S$,
+    内积 $(\cdot, \cdot)$ 将 $S\times S$ 映射到 $F$ 满足
+    \begin{align*}
+        (u,v) &= \overline{(v,u)}\\
+        (au+bv, w) &= a(u,w) + b(v,w)\\
+        \forall u\;:\;&(u,u) \in \Rset,\quad (u,u) \ge 0,\quad (u,u) = 0 \Leftrightarrow u = \mathbf{0}
+    \end{align*}
+\paragraph{Cauchy-Schwartz 定理}
+    由构造判别式法易证 Cauchy-Schwartz 定理 \[
+        |(u,v)|^2 \le (u,u)(v,v)\]
+\paragraph{权函数}
+    $[a,b]$ 上的函数 $\rho(x)$ 满足 \begin{align*}
+        \rho(x) &\ge 0\\
+        \int_a^b \rho(x) x^k \ud x &\in \Rset\\
+        \forall g(x) \in C[a,b],\,g(x)\ge 0\;:\;&
+            \int_a^b g(x)\rho(x) \ud x = 0 \Leftrightarrow g(x) \equiv 0
+    \end{align*}
+
+\subsubsection{最佳逼近}
+    对于 $f \in C[a,b]$, 考虑用 $[a,b]$ 上的 (不超过) $n$ 次的多项式 $P^*(x)$ 逼近.\par
+    若 $\| f - P^* \|_{n} = \min_{P \in H_n} \| f - P\|_n $, 其中$H_n$ 表示次数界为 $n$ 的多项式集合,
+    则称 $P^*$ 是 $f$ 的最佳逼近多项式.\par
+    当 $n = \infty$ 时称为最优一致逼近多项式, $n = 2$ 称最优平方逼近多项式.\par
+
+\subsubsection{正交函数族}
+    若函数族 $\varphi_k$ 满足 \[
+        (\varphi_i,\varphi_j) = \int_a^b \rho(x) \varphi_i(x) \varphi_j(x) \ud x = A_i\delta_{ij}\]
+    则称 $\varphi_k$ 是 $[a,b]$上的关于 $\rho$ 的正交函数族.\par
+    常见的如 $\left\langle 1, \sin x, \cos x, \sin 2x, \cos 2x \ldots \right\rangle$.\par
+\paragraph{正交多项式}
+    若正交函数族 $\varphi_k,k \in \Nset$ 满足 $\deg \varphi_k = k$ 则称 $\varphi_n$ 为 $n$ 次正交多项式.
+    $\varphi_n$ 可以容易地构造出. 在某个 $[a,b]$, 给定 $\varphi_0$ 则可以惟一确定 $\varphi_n$.\par
+    可以证明正交多项式 $\varphi_n$ 在 $[a,b]$ 上有且仅有 $n$ 个零点.
+% 证明可以假设其在 $[a,b]$ 上只有 $l<n$ 个零点, 得到 $q = \prod_i (x - x_i), 考虑这 (\varphi_n, q).
+
+\subsection{最佳平方逼近}
+\paragraph{一般函数族最佳平方逼近}
+    考虑的是 $[a,b]$ 上用一般的函数族
+    $\left\langle \varphi_0, \ldots \varphi_n \right\rangle$
+    逼近 $f$ 能达到的最佳平方逼近 $ \min \| f - \sum a_i \varphi_i \|_2$.\par
+    对这个函数求偏微分可得到法方程 \[
+        \forall i\;:\;\sum_j a_j (\varphi_i, \varphi_j)  = (f, \varphi_i)
+    \]
+    注意之后需要证明这样的 $\sum a_i \varphi_i $ 确实是最佳平方逼近,
+    因为驻点不是充要条件.\par
+    记 $S^*$ 为最佳平方逼近, 则法方程的重要推论是 $(f, S^*) = (S^*, S^*)$.
+\paragraph{多项式平方逼近}
+    当 $\varphi_i = x^i,\;0 \le i \le n$, $\rho \equiv 1$ 时的情况.
+    同上, 需要解方程 $\mathbf{H} \mathbf{a} = \mathbf{d}$,
+    其中 $H_{ij} = \frac{1}{i+j-1}$ 称为 Hilbert 矩阵,
+    $d_i = (f, \varphi_i)$.\par
+    但是容易看出, $\lim_{n\to\infty} \det \mathbf{H} = 0$, 因此求解
+    $\mathbf{H} \mathbf{a} = \mathbf{d}$ 是不稳定的.
+\paragraph{正交函数族平方逼近}
+    考虑 $\varphi_i$ 正交的情况. 法方程变形为 \[
+        a_i = \frac{(f, \varphi_i)}{(\varphi_i, \varphi_i)}\]
+    这种情况下, 误差界分析推出 Bessel 公式 $ \sum_i \left(a^*_i \|\varphi_i\|_2\right)^2 \|f\|_2^2 $
+
+\subsection{曲线拟合的最小二乘法}
+    给定数据点 $\langle (x_i, y_i) \rangle$,
+    从函数族 $\langle \varphi_0, \varphi_1 \ldots \rangle$
+    中取出一个函数 $S^*$, 最小化 $\sum_i (S^*(x_i) - y_i)^2$.
+\paragraph{和最佳平方逼近的联系}
+    定义离散点上的内积, 给定 $\langle x_i \rangle$, 则定义其离散点上内积为
+    $(f, g) = \sum_i \rho_i f(x_i) g(x_i)$, 其中 $\rho$ 是权序列.
+    同样可以定义二次范数 $\|f\|_2 = \sqrt{(f, f)}$.\par
+    则最小二乘法变为与最佳平方逼近同样的形式
+    $\min \|f - S\|_2$, 其中 $f(x_i) = y_i$.
+    求解也和最佳平方逼近是一样的.
+\paragraph{基函数的选择}
+    选择 $\langle \varphi_i \rangle$,
+    可以根据数据规律手动选取,
+    或者使用一些通用的正交 / 非正交函数族.
+    对于多项式的情况, 一般选择正交多项式而非 $\langle x^k \rangle$,
+    因后者的行列式病态.
+
+\section{数值积分}
+    给定函数 $f$ 和积分区间 $[a,b]$, 求 $I[f] = \int_a^b f(x) \ud x$.
+\subsection{插值积分}
+\paragraph{代数精度}
+    若数值积分方法 $I$ 满足在 $[a,b]$ 上有
+    $\forall k \in [0, m]\;:\; I[x^k] = \int_a^b x^k \ud x$, 
+    但 $I[x^{m+1}] \neq \int_a^b x^{m+1} \ud x$,
+    则称数值积分方法 $I$ 在 $[a,b]$ 上有代数精度 $m$.
+\subsubsection{插值求积方法}
+    $I_n[f] = \int_a^b L_n(x) \ud x$,
+    其中 $L_n(x)$ 是 $f$ 在 $[a,b]$ 上 $n+1$ 个点
+    $\langle x_0, x_1 \ldots x_n \rangle$ 的 Lagrange 插值.
+    $\langle x_k \rangle$ 按照某种与 $f$ 无关的方法确定.
+\paragraph{插值求积方法的余项}
+    考虑 Lagrange 插值的余项是 
+    $R_n(x) = f(x) - L_n(x) =
+        \frac{f^{(n+1)}(\xi)}{(n+1)!} \omega_{n+1}(x)$,
+    故有插值求积的余项是 
+    $\int_a^b \frac{f^{(n+1)}(\xi)}{(n+1)!} \omega_{n+1}(x) \ud x$.\par
+    由此易证插值求积 $I_n[f]$ 的代数精度至少为 $n$.
+    但是可以构造一种选取 $\langle x_k \rangle$
+    的方法使得其代数精度大于 $n$.
+\subsubsection{函数值的加权表示}
+    $I_n[f] = \sum_{k = 0}^n A_k f(x_k)$,
+    其中 $A_k$, $x_k$ 是以一种与 $f$ 无关的方法选择的.\par
+    若 $I_n[f] = \sum_{k=0}^n A_k f(x_k)$ 在上代数精度至少为 $n$,
+    则 $I_n[f] = \int_a^b L_n(x)$. 即这样的 $I_n$ 是插值求积方法.\par
+    证明可以考虑 $I_n[l_k]$, 有 $A_k = \int_a^b l_k(x) \ud x$, 
+    再带入 $I_n[f] = \sum_{k=0}^n A_k f(x_k)$ 即证.
+
+
+% TODO
+
+\section{常微分方程数值解}
+\subsection{基本概念}
+\paragraph{常微分方程描述}
+    对于 \[
+        y' = f(x, y) \]
+    其中 $x \in [a,b]$, $y \in \Rset$,
+    给定初值 \[
+        y(x_0) = y_0 \]
+    称为一个常微分方程 (ode).
+\paragraph{解的存在唯一性}
+    若 $f$ 在 $[a, b] \times \Rset$ 连续, 且满足 Lipschitz 条件 \[
+        |f(x, y_1) - f(x, y_2)| \le L | y_1 - y_2|\]
+    则如上描述的常微分方程对于任意 $x_0 \in [a,b], y_0 \in \Rset$ 有唯一解.
+\paragraph{对初值的敏感性}
+    对于给定初值有唯一解的 ode, 记 $y(s, x)$ 是给定初值 $y(x_0) = s$ 时的解,
+    则 \[ |y(s_1, x) - y(s_2, x)| \le e^{L |x - x_0|} |s_1 - s_2| \]
+    其中 $L$ 为 $f$ 的 Lipschitz 常数.
+\paragraph{微分方程的数值解法}
+    给定 $x_0 < x_1 < \ldots < x_{n-1} < x_n$, 以及初值 $y_0$, 要求
+    $y_i$. 通常认为 $|x_{i+1} - x_i| = h$ 是常量.
+    下面使用 $y_i = \varphi(\mathbf{x}, \mathbf{y}, h)$ 来表示一个数值解法.
+\paragraph{局部截断误差}
+    对于 $y_i = \varphi(\mathbf{x}, \mathbf{y}, h)$, 定义其截断误差为 \[
+        T_i = y(x_i) - \varphi(\mathbf{x}, \langle y(x_0), y(x_1) \ldots y(x_n) \rangle, h) \]
+\paragraph{精度}
+    若 $y_i = \varphi(\mathbf{x}, \mathbf{y}, h)$ 满足 $T_n = o(h^{p+1})$, 
+    则称它有 $p$ 阶精度.
+
+\subsection{Euler 方法}
+\subsubsection{显式Euler法}
+    显式单步法. 基本方程\[
+        y_{i+1} = y_i + h f(x_i, y_i)\]
+    局部截断误差 \[
+        T_i = h^2 \frac{y''(x_i)}{2} + o(h^3)\]
+    精度为 1 阶.
+\subsubsection{隐式Euler法}
+    隐式法. 基本方程\[
+        y_{i+1} = y_i + h f(x_{i+1}, y_{i+1})\]
+    精度为 1 阶.\par
+    通常需要由显式 Euler 法给出一个 $\mathbf{y}$ 的初值,
+    然后再由隐式 Euler 法迭代.\par
+    如果 $|hL| < 1$, $L$ 是 Lipschitz 常数, 那么迭代一定收敛到隐式法的迭代方程,
+    虽然不一定收敛到原 ode 的解.
+\subsubsection{梯形法}
+    隐式法. 基本方程\[
+        y_{i+1} = y_i + h \frac{f(x_i, y_i) + f(x_{i+1}, y_{i+1})}{2}\]
+    局部阶段误差 \[
+        T_i = -\frac{h^3}{12} y^{(3)}(x_i) + o(h^4)\]
+    精度为 2 阶.\par
+    显式 Euler 法提供初值时, 称为 ``改进的 Euler 法''.
+
+\subsection{Runge-Kuta 方法}
+\subsubsection{基本叙述}
+    Runge-Kuta 方法是单步显式法.
+    对于单步显式法 $y_{i+1} = y_i + h \varphi(x_i, y_i, h)$,
+    局部截断误差是 \[
+        T_n = \int_{x_n}^{x_{n+1}} f(x, y(x)) \ud x - h \varphi(x_n, y_n, h)\]
+    因此主要使得 $h \varphi(x_n, y_n, h)$ 接近积分即可. 这里就可以使用数值积分的方法.
+\subsubsection{低阶情况}
+    考虑二阶 Runge-Kuta 方法 \begin{align*}
+        y_{i+1} &= y_i + h (c_1 K_1 + c_2 K_2)\\
+        K_1 &= f(x_n, y_n)\\
+        K_2 &= f(x_n + \lambda_2 h, y_n + \mu_{21} h K_1)
+    \end{align*}
+    分解得到, $c_1, c_2, \lambda_2, \mu_{21}$ 满足 \begin{align*}
+        c_1 + c_2 &= 1\\
+        c_2 \lambda_2 &= \frac{1}{2}\\
+        c_2 \mu_{21} &= \frac{1}{2}
+    \end{align*}
+    精度为 2 阶. 如 $c_1 = c_2 = \frac{1}{2}$ 就是梯形法, $c_1 = 0, c_2 = 1$ 就是 ``中点公式''.
+
+\subsection{收敛和稳定}
+\subsubsection{收敛性}
+\paragraph{概念}
+    对于某种数值方法, 如果 $\lim_{h \to \infty} y_n = y(x_n)$, 那么称其收敛.
+\paragraph{单步法的收敛性}
+    对于单步法 $y_{n+1} = y_n + h \varphi(x_n, y_n, h)$, 如果其具有 $p$ 阶精度,
+    且 $\varphi$ 关于 $y$ 有 Lipschitz 条件, 那么只要初值 $y_0$ 是准确的, 
+    整体截断误差 $T_{n} = y_n - y(x_n) = o(h^p)$.\par
+    通过单步法收敛定理, 可以直接通过 $\varphi$ 是否满足 Lipschitz 条件判断
+    单步法是否收敛.
+\paragraph{相容性}
+    如果单步法满足 $\varphi(x, y, 0) = f(x, y)$, 那么称单步法和原 ode 相容.
+    当且仅当单步法有 $p \ge 1$ 阶精度, 单步法和原 ode 相容.
+\subsubsection{稳定性}
+\paragraph{基本概念}
+    稳定性不仅受原 $f$ 的影响, 而且还受 $h$ 的影响. 为了标准化研究, 只考虑如下的 ode \[
+        f(x, y) = \lambda y\]
+    解析解为 $y = e^{\lambda x}$, 要求 $\mathbb{Re} \lambda < 0$.\par
+    使得迭代法收敛的 $|h\lambda|$ 构成的 $\Cset$ 区域称为绝对收敛域, 实轴上部分成为绝对收敛区间.\par
+    以显式 Euler 法为例子, 上述 ode 的迭代式为 $y_{n+1} = (1+h\lambda) y_n$.
+    因此 $\epsilon_{n+1} = (1 + h\lambda) \epsilon_{n}$, 只要 $|1 + h\lambda| < 1$
+    显式 Euler 法就针对初值的波动是稳定的.\par
+
+\subsection{线性多步法}
+\subsubsection{基本概念}
+    考虑显式的多步法, $k$ 步的方程为 \[
+        y_{n+k} = \sum_{i=0}^{k-1} \alpha_i y_{n+i} + h \sum_{i=0}^{k-1} \beta_i f(x_{n+i}, y_{n+i})\]
+\subsubsection{精度推导}
+    考虑 $T_{n+k}$ 的局部截断误差, 有 \begin{align*}
+        T_{n+k} =& y(x_{n+k}) - \sum_{i=0}^{k-1} \alpha_i y_{n+i} - h \sum_{i=0}^{k-1} \beta_i f(x_{n+i}, y_{n+i})\\
+                =& y(x_n + kh) - \sum_{i=0}^{k-1} \alpha_i y(x_n + ih) - h \sum_{i=0}^{k-1} \beta_i y'(x_n + ih)\\
+                =& \sum_{j\ge 0} \frac{(kh)^j}{j!} y^{(j)}(x_n) \\
+                &- \sum_{i=0}^{k-1} \alpha_i \sum_{j\ge 0} \frac{(ih)^j}{j!} y^{(j)}(x_n) \\
+                &- h \sum_{i=0}^{k-1} \beta_i \sum_{j\ge 0} \frac{(ih)^j}{j!} y^{(j+1)}(x_n)\\
+                =& \sum_{j\ge 0} y^{(j)}(x_n) \frac{h^j}{j!} c_j
+    \end{align*}
+    其中 \[
+        c_j =  k^j - \sum_{i=0}^{k-1} \alpha_i i^j - j\sum_{i=0}^{k-1} \beta_i i^{j-1}\]
+    \par
+    如果 $c_0 = c_1 = \ldots = c_p = 0$, 则显然 $\alpha$, $\beta$ 确定的线性多步法有 $p$ 阶精度.
+\subsubsection{Adams 公式}
+    Adam 公式形如 \[
+        y_{n+k} = y_{n+k-1} + h\sum_{i=0}^{k} \beta_i f(x_{n+i})\]
+    注意求和上界是 $k$. 如果 $\beta_k =0$, 则 Adams 公式为显式的,
+    否则为隐式的.\par
+    只需求出 $\beta_k$. 如上 $\alpha_{k-1} = 1$, 方程为 \[
+        \sum_{i=0}^{k} j i^{j-1} \beta_i = k^j - k^{j-1},\quad 1 \le j \le k+1\]
+    约定 $0^0 = 1$. 令 $\beta_{k} =0$ 并丢弃最后一个方程, 即得显式情况的方程.\par
+    显式公式的精度是 $k$, 隐式公式是 $k+1$.
+
+\end{document}
