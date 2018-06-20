@@ -17,6 +17,7 @@
 \newcommand{\Nset}{\mathbb{N}}
 \newcommand{\ud}{\,\mathrm{d}\,}
 \newcommand{\sgn}{\mathrm{sgn}}
+\newcommand{\cond}{\mathrm{cond}}
 
 \begin{document}
 
@@ -328,6 +329,299 @@
 
 
 % TODO
+\section{解线性方程的直接法}
+\subsection{Gauss 消元法}
+\paragraph{基本概念}
+    算法略. 我们的语言中, 第 $k$ 次消元完成后, 矩阵应当如下形态 \[
+        \begin{bmatrix}
+            a^{(k)}_{11} & \cdots & a^{(k)}_{1k}  & \cdots & a^{(k)}_{1n} \\
+                         & \ddots & \vdots        & \vdots & \vdots              \\
+                         &        & a^{(k)}_{k k} & \cdots & a^{(k)}_{kn}        \\
+                         &        & \vdots        & \ddots & \vdots              \\
+                         &        & a^{(k)}_{n k} & \cdots & a^{(k)}_{nn}        \\
+        \end{bmatrix}\]
+\paragraph{收敛条件}
+    诸顺序主子式 $D_i \neq 0$.\par
+\paragraph{列主元的 Gauss 消元}
+    第 $k$ 步选取使得 $|a^{(k-1)}_{jk}|$ 最大的 $j \ge k$, 与第 $k$ 行交换之后再继续.
+\paragraph{分解地理解}
+    原始 Gauss (行) 消元即, 对于顺序主子式非 0 的 $\mathbf{A}$, 有唯一的分解 \[
+        \mathbf{A} = \mathbf{L} \mathbf{U}\]
+    其中 $\mathbf{L}$ 是\emph{单位}下三角阵, $\mathbf{U}$ 是上三角阵.\par
+    选列主元的 Gauss 消元就是 \[
+        \mathbf{P} \mathbf{A} = \mathbf{L} \mathbf{U}\]
+    其中 $\mathbf{P}$ 是排列阵.
+
+\subsection{矩阵分解}
+\subsubsection{Doolittle 分解}
+    就是 LU 分解. \[
+        \mathbf{A} = \mathbf{L} \mathbf{U}
+    \]
+    \par
+    直接可得到 \begin{align*}
+        u_{ri} &= a_{ri} - \sum_{k=1}^{r-1} l_{rk} u_{ki},\quad i \ge r\\
+        l_{ir} &= \frac{a_{ir} - \sum_{k=1}^{r-1} l_{ik} u_{kr}}{u_{rr}},\quad i > r
+    \end{align*}
+    Doolittle 分解中我们也可以选主元.
+\subsubsection{Cholesky 分解}
+    对于对称正定阵 $A$, 存在下三角矩阵 $\mathbf{L}$, \[
+        \mathbf{A} = \mathbf{L} \mathbf{L}^T\]
+    若要求 $l_{ii} > 0$, 则 $\mathbf{L}$ 唯一.\par
+    直接可以得到 \begin{align*}
+        l_{ij} &= \frac{a_{ij} - \sum_{k=1}^{j-1} l_{ik} l_{jk}}{l_{jj}},\quad i > j\\
+        l_{ii} &= \sqrt{a_{ii} - \sum_{k=1}^{i-1} l_{ik}^2}
+    \end{align*}
+\subsubsection{追赶法}
+    考虑非奇异对角占优三对角阵 \[
+        \mathbf{A} = \begin{bmatrix}
+            b_1 & c_1 &        &         &         &         \\
+            a_2 & b_2 & c_2    &         &         &         \\
+                & a_3 & b_3    & c_3     &         &         \\
+                &     & \ddots & \ddots  & \ddots  &         \\
+                &     &        & a_{n-1} & b_{n-1} & c_{n-1} \\
+                &     &        &         & a_n     & b_n     \\
+        \end{bmatrix}\]
+    其中 $|b_i| > |a_i| + |c_i|$.\par
+    可分解为 $\mathbf{A} = \mathbf{L} \mathbf{U}$, 其中 \begin{align*}
+        \mathbf{L} &= \begin{bmatrix}
+            \alpha_1 &          &          &         &              &          \\
+            r_2      & \alpha_2 &          &         &              &          \\
+                     & r_3      & \alpha_3 &         &              &          \\
+                     &          & \ddots   & \ddots  &              &          \\
+                     &          &          & r_{n-1} & \alpha_{n-1} &          \\
+                     &          &          &         & r_n          & \alpha_n \\
+        \end{bmatrix}\\
+        \mathbf{U} &= \begin{bmatrix}
+            1 & \beta_1 &         &         &         &             \\
+              & 1       & \beta_2 &         &         &             \\
+              &         & 1       & \beta_3 &         &             \\
+              &         &         & \ddots  & \ddots  &             \\
+              &         &         &         & 1       & \beta_{n-1} \\
+              &         &         &         &         & 1           \\
+        \end{bmatrix}\end{align*}
+    同样直接容易求得 \begin{align*}
+        r_i &= a_i\\
+        \alpha_i &= b_i - a_i \beta_{i-1}\\
+        \beta_i &= \frac{c_i}{\alpha_i}
+    \end{align*}
+
+\subsection{误差分析}
+\subsubsection{向量内积}
+    向量内积 $(\mathbf{u}, \mathbf{v})$ 需要满足
+        \begin{description}
+        \item[线性性] $(\alpha \mathbf{u} + \beta \mathbf{v}, \mathbf{w}) = \alpha (\mathbf{u}, \mathbf{w}) + \beta (\mathbf{v}, \mathbf{w})$.
+        \item[正定性] $(\mathbf{u}, \mathbf{u}) \ge 0$, 当且仅当 $\mathbf{u} = \mathbf{0} $等号成立.
+        \item[对称性] $(\mathbf{u}, \mathbf{v}) = (\mathbf{v},\mathbf{u})$, 对于复数情况是对称共轭.
+    \end{description}
+\subsubsection{向量范数}
+    向量范数 $\|\cdot\|\;:\;\Rset^n \to \Rset$ 需要满足
+    \begin{description}
+        \item[线性性] $\|\alpha \mathbf{v}\| = |\alpha| \|\mathbf{v}\|$
+        \item[正定性] $\|\mathbf{v}\| \ge 0$, 当且仅当 $\mathbf{v} = \mathbf{0}$ 等号成立
+        \item [三角不等式] $\| \mathbf{u} + \mathbf{v} \| \le \|\mathbf{u} \| + \|\mathbf{v}\|$
+    \end{description}
+    范数的几何意义可以理解为长度.\par
+    常用的 $p$ 范数定义为 $\|\mathbf{v}\|_p = \sqrt[p]{\sum_i v_i}$,
+    特别地有 $\|\mathbf{v}\|_{\infty} = \max_i v_i$.\par
+\paragraph{范数的连续性}
+    \[\lim_{\mathbf{u} \to \mathbf{v}} \|\mathbf{u}\| - \|\mathbf{v}\| = 0\]
+    证明直接考虑证明 $\|\mathbf{u} - \mathbf{v}\| \to 0$.
+\paragraph{范数的等价性}
+    任意两种向量范数 $\|\mathbf{v}\|_{\nu_1}$ 和 $\|\mathbf{v}\|_{\nu_2}$, 存在 $0 < c_1 \le c_2$ 使得 \[
+        c_1 \|\mathbf{v}\|_{\nu_1} \le \|\mathbf{v}\|_{\nu_2} \le c_2 \|\mathbf{v}\|_{\nu_1}\]
+    证明考虑用 $\nu_1 = \infty$ 做跳板.
+\subsubsection{矩阵范数}
+    矩阵范数 $\|\cdot\|\;:\;\Rset^{n \times n}\to \Rset$ 需要满足
+    \begin{description}
+        \item[正定性] $\| \mathbf{A} \| \ge 0$, 当且仅当 $\mathbf{A} = \mathbf{0}$ 等号成立
+        \item[线性性] $\|\alpha \mathbf{A}\| = |\alpha| \|\mathbf{A}\|$
+        \item [三角不等式] $\|\mathbf{A} + \mathbf{B}\| \le \|\mathbf{A}\| + \|\mathbf{B}\|$
+        \item[乘法] $\|\mathbf{A} \mathbf{B} \| \le \|\mathbf{A} \| \|\mathbf{B}\|$
+    \end{description}
+\paragraph{从属和相容}
+    对于向量范数 $\|\cdot\|_{\nu}$ 定义其从属的矩阵范数是 \[
+        \|\mathbf{A}\|_{\nu} = \max_{\mathbf{x}} \frac{\|\mathbf{A} \mathbf{x} \|_{\nu}}{\|x\|_{\nu}}
+        \]
+    显然从属范数满足相容性条件 \[
+        \| \mathbf{A} \mathbf{x} \|_{\nu} \le \|\mathbf{A}\|){\nu} \|\mathbf{x}\|_{\nu}\]
+\paragraph{常见矩阵范数}
+    \begin{itemize}
+        \item $\|\mathbf{A}\|_F = \sqrt{\sum_{i,j} a_{ij}}$ 称为 Frobenius 范数
+        \item $\|\mathbf{A}\|_{\infty} = \max_i \sum_j |a_{ij}|$
+        \item $\|\mathbf{A}\|_1 = \max_j \sum_i |a_{ij}|$
+        \item $\|\mathbf{A}\|_2 = \sqrt{\lambda_{max}(\mathbf{A}^T \mathbf{A})}$
+    \end{itemize}
+\paragraph{矩阵范数性质}
+    \begin{itemize}
+        \item $\|\mathbf{A} \| \ge \rho(\mathbf{A} ) = \lambda_{\max}(\mathbf{A} )$
+        \item $\forall \epsilon > 0\;:\;\exists \nu\;:\;\|\mathbf{A}\|_{\nu} \le \rho(\mathbf{A}) + \epsilon$
+            证明略复杂.
+        \item 若 $\|\mathbf{B} \| < 1$ 且 $\mathbf{I} \pm \mathbf{B} $ 非奇异, 则
+            $ \| (\mathbf{I} \pm \mathbf{B})^{-1} \| \le \frac{1}{1 - \|B\|}$
+    \end{itemize}
+\subsubsection{病态矩阵}
+    对于方程组求解问题 $\mathbf{A} \mathbf{x} = \mathbf{b}$, 若微小的系数变动造成最后解的巨大波动,
+    则称矩阵 $\mathbf{A}$ 是病态的.
+\paragraph{摄动条件}
+    对于 $\delta \mathbf{b}$ 微小的扰动,
+    求解 $\mathbf{A} (\mathbf{x} + \delta \mathbf{x}) = \mathbf{b} + \delta \mathbf{b}$, 有 \[
+        \frac{\|\delta \mathbf{x}\|}{\|\mathbf{x}\|} \le %
+        \|\mathbf{A}^{-1}\| \|\mathbf{A}\| \frac{\|\delta \mathbf{b}\|}{\|\mathbf{b}\|}\]
+    对于 $\delta \mathbf{A}$ 微小的扰动, 需要假设 $\| \mathbf{A}^{-1} \delta \mathbf{A} \| < 1$,
+    求解 $(\mathbf{A} + \delta \mathbf{A}) \mathbf{x} = \mathbf{b}$, 有 \[
+        \frac{\|\delta \mathbf{x}\|}{\|\mathbf{x}\|} \le %
+        \frac{\|\mathbf{A} ^{-1}\| \|\mathbf{A} \| \frac{\|\delta \mathbf{A} \|}{\|\mathbf{A} \|}}%
+        { 1 -  \|\mathbf{A} ^{-1}\| \|\mathbf{A} \| \frac{\|\delta \mathbf{A} \|}{\|\mathbf{A} \|}}\]
+\paragraph{矩阵的条件数}
+    定义 $\cond(\mathbf{A} )_{\nu} = \|\mathbf{A} ^{-1}\|_{\nu} \|\mathbf{A}\|_{\nu}$ 为 $\mathbf{A}$ 的条件数.
+    一般取 $\nu = 1, 2, \infty$.
+    条件数反映矩阵的病态程度, 条件数越大, 矩阵越病态.\par
+\paragraph{条件数性质}
+    \begin{itemize}
+        \item $\cond(\mathbf{A} ) \ge 1$
+        \item $\cond(\mathbf{A} )_2 = \left| \frac{\lambda_{\max}}{\lambda_{\min}} \right|$
+        \item $\cond(\mathbf{A} \mathbf{B}) \le \cond(\mathbf{A} )\, \cond(\mathbf{B})$
+    \end{itemize}
+
+
+\section{解线性方程的迭代法}
+\subsection{通用迭代法}
+    对于方程 $\mathbf{A} \mathbf{x} = \mathbf{b} $, 通过将其改写为 \[
+        \mathbf{x} = \mathbf{B} \mathbf{x} + \mathbf{f} \]
+    之后按照 $\mathbf{x}^{(n+1)} = \mathbf{B} \mathbf{x}^{(n)} + \mathbf{f} $迭代.\par
+    若 $\lim_{n\to\infty} \mathbf{x}^{(n)} = \mathbf{x}^*$ 存在, 则称迭代法收敛.
+    显然 $\mathbf{x}^*$ 必为原方程的解.\par
+    实际中通常将 $\mathbf{A}$ 改写为 $\mathbf{M} + \mathbf{N}$, $\mathbf{M}$ 容易求逆, 之后 \[
+        \mathbf{x} = - \mathbf{M}^{-1} \mathbf{N} \mathbf{x} + \mathbf{M}^{-1} \mathbf{b} \]
+\subsubsection{收敛条件}
+    考虑初始误差 $\mathbf{e}^{(0)} = \mathbf{x}^{(0)} - \mathbf{x}^*$.
+    显然 $\mathbf{e}^{(n)} = \mathbf{B}^n \mathbf{e}^{(0)}$.
+    故有, 迭代法收敛, 当且仅当 \[
+        \lim_{n\to\infty} \mathbf{x}^{(n)} = \mathbf{x}^* \Leftrightarrow %
+        \lim_{n\to\infty} \mathbf{B}^n = \mathbf{0}\]
+\paragraph{等价的收敛条件}
+    上述收敛条件等价于 \begin{enumerate}
+        \item $\rho(\mathbf{B}) < 1$
+        \item $\exists \text{从属范数}\,\nu\;:\;\|\mathbf{B}\|_{\nu} < 1$
+    \end{enumerate}
+    证明需要大量使用如下性质 \[
+        \forall \epsilon\;:\;\exists\nu\;:\;\|\mathbf{B}\|_{\nu} \in [\rho(\mathbf{B}), \rho(\mathbf{B})+\epsilon]\]
+\paragraph{收敛速度}
+    简单的考虑, 设对于 $\nu$ 有 $\|\mathbf{B}\|_{\nu} = q < 1$, 则容易证明 \begin{align*}
+        \|\mathbf{x}^{(k)} - \mathbf{x} ^*\| &\le q^k \|\mathbf{x} ^{(0)} - \mathbf{x}^*\|\\
+        \|\mathbf{x} ^{(k)} - \mathbf{x} ^*\| &\le \frac{q}{1-q} \| \mathbf{x}^{(k)} - \mathbf{x}^{(k-1)}\|
+    \end{align*}
+\paragraph{平均收敛速度}
+    显然 $\|\mathbf{e}^{(k)}\| \le \|\mathbf{e}^{(0)}\| \cdot \|\mathbf{B}^k\|$, 如欲让 \[
+        \frac{\|\mathbf{e}^{(k)}\|}{\|\mathbf{e}^{(0)}\|} < \sigma\]
+    则 $ \|\mathbf{B}^k\| < \sigma$. 即 \[
+        k \ge \frac{-\ln\sigma}{-\ln\left(\|\mathbf{B}^k\|^{1/k}\right)}\]
+    称 $-\ln\left(\|\mathbf{B}^k\|^{1/ke}\right)$ 为平均收敛速度, 记为 $R_k(\mathbf{B})$.\par
+    称 $-\ln\rho(\mathbf{B})$ 为渐进收敛速度, 显然 $\lim_{k\to\infty} R_k(\mathbf{B}) = R(\mathbf{B})$.
+\subsection{具体迭代方法}
+\subsubsection{Jacobi 方法}
+    改写 $\mathbf{A} = \mathbf{D} + \mathbf{L} + \mathbf{U}$, 其中 $\mathbf{D}$ 是对角矩阵,
+    $\mathbf{L}$ 是对角线为 0 的下三角阵, $\mathbf{U}$ 是对角线为 0 的上三角阵.
+    令 $\mathbf{M} = \mathbf{D}$, $\mathbf{N} = \mathbf{U} + \mathbf{U}$. 则有 \[
+        \mathbf{x} = - \mathbf{D}^{-1} (\mathbf{L} + \mathbf{U}) \mathbf{x} + \mathbf{D}^{-1} \mathbf{b}\]
+    即 \[
+        x^{(k+1)}_i = \frac{b_i - \sum_{j \neq i} a_{ji} x^{(k)}_i}{a_{ii}}\]
+\paragraph{收敛条件}
+    若 $\mathbf{A}$ 为严格对角占优阵, 则 Jacobi 法收敛.\par
+    若 $\mathbf{A}$ 对称, 且 $\mathbf{A}$, $2 \mathbf{D} - \mathbf{A}$ 正定, 则 Jacobi 法收敛.
+\subsubsection{Gauss-Seidel 方法}
+    同上, 令 $\mathbf{M} = \mathbf{D}+  \mathbf{L} $, $\mathbf{N} = \mathbf{U}$,
+    但是迭代的时候, 计算 $x^{(k)}_i$ 要使用 $x^{(k)}_{<i}$. \[
+        \mathbf{D} \mathbf{x}^{(k+1)} = - \mathbf{L} \mathbf{x}^{(k+1)} - \mathbf{U} \mathbf{x}^{(k)} + \mathbf{b}\]
+    即 \[
+        x^{(k+1)}_i = \frac{b_i - \sum_{j < i} a_{ij} x^{(k+1})_j - \sum_{j > i} a_{ij} x^{(k)}_j}{a_{ii}}\]
+\paragraph{收敛条件}
+    若 $\mathbf{A}$ 为严格对角占优阵, 则 G-S 法收敛.\par
+    若 $\mathbf{A}$ 对称正定, 则 G-S 方法收敛.
+\subsubsection{超松弛迭代法}
+    引入超参数 $\omega$. 设每步 G-S 方法求出了 $\bar{\mathbf{x}}^{(k+1)}$, 则令 \[
+        \mathbf{x}^{(k+1)} = (1 - \omega) \mathbf{x}^{(k)} + \omega \bar{\mathbf{x}}^{(k+1)}\]
+    \par
+    显然 $\omega = 1$ 时 SOR 就是 G-S 方法, 通常将 $\omega < 1$ 的情况成为欠松弛.\par
+\paragraph{收敛条件}
+    若 SOR 收敛, 则 $0 < \omega < 2$. 证明: 直接考虑 $\rho(M) < 1$ 即可, 利用 $|\mathbf{A}| = \prod_i \lambda_i$.\par
+    若 $\mathbf{A}$ 为对称正定阵, 且 $0 < \omega < 2$, 则 SOR 收敛.\par
+    若 $\mathbf{A}$ 为严格对角占优阵, 且 $0 < \omega \le 1$ 则 SOR 收敛.
+
+\section{非线性方程和方程组的数值解}
+\subsection{基本概念}
+\paragraph{方程求根}
+    给定 $f: \Rset \to \Rset$, $f$ 连续, 求一个 $x\;:\; f(x) = 0$.
+    称该 $x$ 为 $f$ 的根, 通常记为 $x^*$.
+\paragraph{多重根}
+    令 $m$ 是最大的自然数使得 $\lim_{x \to x^*} \frac{f(x)}{(x-x^*)^{m-1}} = 0$,
+    称 $x^*$ 是 $f$的 $m$ 重根.
+\paragraph{二分法}
+    二分法是通用的求根方法, 简单而且保证收敛, 但是速度太慢.
+
+\subsection{不动点迭代法}
+\subsubsection{基本概念}
+\paragraph{不动点法}
+    将方程求根问题 $f(x) = 0$ 改为不动点寻找问题 $x = \varphi(x)$,
+    通过迭代 $x_{k+1} = \varphi(x_k)$ 求根.
+    如果 $\lim_{n\to\infty} x_n = x^*$ 则称不动点法收敛.
+\paragraph{全局收敛定理}
+    若 $\varphi \in C[a, b]$, 且 $\forall x \in [a,b]\;:\; \varphi(x) \in [a,b]$,
+    并且 $\exists L < 1\;:\; |\varphi(x_1) - \varphi(x_2)| \le L |x1 - x2|$,
+    则 $[a,b]$ 中有唯一 $x^*\;:\;\varphi(x^*) = x^*$, 并且不动点法收敛.
+\paragraph{局部收敛}
+    如果 $\forall x_0 \in B(x^*, \delta)$, 不动点法都收敛, 则称
+    不动点法在 $x^*$ 局部收敛.
+\paragraph{局部收敛定理}
+    若在 $x^*$ 附近, $\varphi$ 连续且 $|\varphi'(x)| < 1$, 则不动点法在 $x^*$ 局部收敛.
+\subsubsection{收敛阶}
+    若 $x_{k+1} = \varphi(x_k)$ 收敛到 $x^*$, 并且 \[
+        \exists p \ge 1\;:\;\frac{x_{k+1} - x^*}{(x_k - x^*)^p} = C \neq 0\]
+    则称 $\varphi$ 在 $x^*$ 是 $p$ 阶收敛的.
+\paragraph{收敛定理}
+    若 $\varphi^{(p)}$ 在 $x^*$ 领域连续, 且存在正整数 $p$, \begin{align*}
+        \varphi(x^*) = \varphi'(x^*) = \ldots = \varphi^{(p-1)}(x^*) &= 0\\
+        \varphi^{(p)}(x^*) \neq 0
+    \end{align*}
+    则 $\varphi$ 在 $x^*$ 是 $p$ 阶收敛的.
+
+
+\subsection{Newton 法}
+\subsubsection{基本 Newton 法}
+    $x_{k+1} = \varphi(x_k)$, 迭代方程 \[
+        \varphi(x) = x - \frac{f(x)}{f'(x)}\]
+    \par
+    基本 Newton 法局部二阶收敛.\par
+    基本 Newton 法严重依赖初值的选取, 初值选好了收敛非常快, 初值选取不好不收敛.
+\subsubsection{简化 Newton 法}
+    简化 Newton 法不用每次求导数 $f'(x_k)$\[
+        \varphi(x) = x - \frac{f(x)}{f'(x_0)}\]
+    \par
+    简化 Newton 法局部线性收敛.\par
+\subsubsection{Newton 下山法}
+    主要解决的 Newton 法对于初值非常依赖的问题.
+    Newton 法求出 $\bar{x}_{k+1} = \varphi(x_k)$,
+    之后比较 $|f(\bar{x}_{k+1})|$ 和 $|f(x_k)|$.
+    若 $|f(\bar{x}_{k+1})| < |f(x_k)|$, 直接令 $x_{k+1} = \bar{x}_{k+1}$,
+    否则选取 $\lambda \in (0, 1]$,
+    令 $x_{k+1} = \lambda \bar{x}_{k+1} + (1-\lambda) x_k$,
+    要求 $|f(x_{k+1})| < |f(x_k)|$.
+\subsubsection{弦截法}
+    不用求导数.
+    需要两个初值 $x_1, x_0$, 计算 $x_{k+1}$ 使用 $x_k, x_{k-1}$ 如下 \[
+        x_{k+1} = x_k - \frac{f(x_k)}{\frac{f(x_k) - f(x_{k-1})}{x_k - x_{k-1}}}\]
+    弦截法局部 $\frac{\sqrt{5}+1}{2}$ 阶收敛.
+
+\subsection{方程求根的敏感性}
+\paragraph{病态方程}
+    如果代数方程 $p(x) = \sum_{i=0}^n a_i x^i$ 对于很小的系数扰动,
+    根的变化很大, 则称 $p(x)$ 是病态的.\par
+% 这个直觉推导很容易, 书上也不严密. 但是严格好像还有点问题.
+    通常称\[
+        \frac{q(x^*)}{[p'(x^*)}\]
+    为方程求根的条件数, 越大表示方程越病态.
+
+
 \section{矩阵特征值计算}
 \subsection{特征值基本概念}
 \paragraph{Rayleigh商}
