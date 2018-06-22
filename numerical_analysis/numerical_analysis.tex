@@ -89,7 +89,7 @@
 \section{插值法}
 \subsection{基本概念}
 \paragraph{插值问题} 给定点$x_0, x_1\ldots x_n$, 以及$y_0,y_1\ldots y_n$,
-    并且$y_i = f(x_i$, $f$是某一个未知的函数.
+    并且$y_i = f(x_i)$, $f$是某一个未知的函数.
     求一条曲线$y=p(x)$其严格通过$(x_0,y_0), (x_1,y_1)\ldots$.\par
     其中称$p$是$f$的插值函数, $\langle x_i \rangle$称为插值节点.\par
     注意插值问题和拟合问题的区别.
@@ -150,6 +150,12 @@
     归纳易得 $f[x_0,x_1,\ldots x_n] = \frac{1}{n!} h^{-n} \Delta^n f_k$.\par
     代入原始Newton插值有 \[
         P_n(x_0 + th) = \sum_{0\le i\le n} \Delta^i f_0 \frac{t^{\underline{i}}}{i!}\]
+    \par
+    或者, 不严密地, 使用算子 \begin{align*}
+        f \circ \mathbf{E}^t &= \mathbf{E}^t \circ f \\
+        &= (\mathbf{I} + \Delta)^t \circ f \\
+        &= \sum_{n \ge 0} {t \choose n} \Delta^n \circ f
+    \end{align*}
 \subsubsection{Hermite插值}
 \paragraph{概念}
     在插值节点 $(x_i, y_i)$ 上要求 $p(x_i) = y_i$ 以外,
@@ -178,10 +184,10 @@
     要求不仅给出 $y_i = f(x_i)$, 还要给出 $y'_i = f'(x_i)$.
     在此前提下, 要求插值函数 $I_{n+1}$ 满足
     $I(x_i) = y_i,\;I'(x_i) = y'_i$,
-    且在每個区间 $[x_i,x_{i+1}]$ 上 $I$
+    且在每个区间 $[x_i,x_{i+1}]$ 上 $I$
     都是三次函数 $a_ix^3+b_ix^2+c_ix+d_i$.
 \paragraph{分区间表示}
-    如式 (5.3), 即对于每個 $[x_i,x_{i+1}]$ 都给出一个表达式.
+    如式 (5.3), 即对于每个 $[x_i,x_{i+1}]$ 都给出一个表达式.
 \paragraph{整体表示}
     $I(x) = \sum_{i=0}^n f_i\alpha_i(x) + f'_i\beta_i(x)$
     和对 $n+1$ 个节点整体插值的结果形式一样,
@@ -212,7 +218,7 @@
 \subsubsection{范数}
     线性空间 $S$ 的元素到 $\Rset$ 的映射 $\|\cdot\|$, 满足如下性质 \begin{align*}
         \| x \| & \ge 0,\quad \|x\| = 0 \Leftrightarrow x = \mathbf{0}\\
-        \|ax\| &= a\|x\|,\; a \in \Rset\\
+        \|ax\| &= |a| \cdot \|x\|,\; a \in \Rset\\
         \|x+y\| &\le \|x\| + \|y\|
     \end{align*} 则称为 $S$ 上的范数. $S$ 称为赋范数空间.\par
 \paragraph{连续函数的范数}
@@ -240,7 +246,7 @@
     \end{align*}
 
 \subsubsection{最佳逼近}
-    对于 $f \in C[a,b]$, 考虑用 $[a,b]$ 上的 (不超过) $n$ 次的多项式 $P^*(x)$ 逼近.\par
+    对于 $f \in C[a,b]$, 考虑用 $[a,b]$ 上的 (不超过) $n$ 次的多项式 $P(x)$ 逼近.\par
     若 $\| f - P^* \|_{n} = \min_{P \in H_n} \| f - P\|_n $, 其中$H_n$ 表示次数界为 $n$ 的多项式集合,
     则称 $P^*$ 是 $f$ 的最佳逼近多项式.\par
     当 $n = \infty$ 时称为最优一致逼近多项式, $n = 2$ 称最优平方逼近多项式.\par
@@ -319,6 +325,14 @@
     由此易证插值求积 $I_n[f]$ 的代数精度至少为 $n$.
     但是可以构造一种选取 $\langle x_k \rangle$
     的方法使得其代数精度大于 $n$.
+\paragraph{余项表达式}
+    如果 $I[f]$ 有 $m$ 阶代数精度, 则其余项 $R[f] = \int_a^b f(x) \ud x - I[f]$
+    可写成 \[
+        R[f] = K f^{(m+1)}(\eta)\]
+    其中 $K$ 是和 $f$ 无关的数. 通常带入 $x^{m+1}$ 就可求出 $K$.
+\paragraph{收敛}
+    不严格的, 考虑差值方法 $I[f]$ 的两个参数 $n$ 和 $h = \max\{x_{i+1} - x_i\}$.
+    若 $\lim_{h\to 0} R[f] = 0$, 则称积分公式 $I$ 收敛.
 \subsubsection{函数值的加权表示}
     $I_n[f] = \sum_{k = 0}^n A_k f(x_k)$,
     其中 $A_k$, $x_k$ 是以一种与 $f$ 无关的方法选择的.\par
@@ -326,9 +340,86 @@
     则 $I_n[f] = \int_a^b L_n(x)$. 即这样的 $I_n$ 是插值求积方法.\par
     证明可以考虑 $I_n[l_k]$, 有 $A_k = \int_a^b l_k(x) \ud x$,
     再带入 $I_n[f] = \sum_{k=0}^n A_k f(x_k)$ 即证.
+\subsubsection{Newton-Cotes积分公式}
+\paragraph{基本概念}
+    Newton-Cotes 公式是等距选取插值节点 $x_k = a + kh,\;h = \frac{b-a}{n}$ 时的
+    Lagrange 插值积分. 等距情况下, Lagrange 插值积分简化如下
+    \begin{align*}
+        \int_a^b f(x) \ud x &\approx \int_a^b L_n(x) \ud x\\
+            &= \int_a^b \sum_{k=0}^n f(x_k) l(x_k)(x) \ud x\\
+            &= \sum_{k=0}^n f(x_k) \int_a^b \frac{\prod_{j \neq k} x - x_j}{\prod_{j \neq k} x_k - x_j} \ud x\\
+            &= \sum_{k=0}^n f(x_k) \int_0^n \frac{\prod_{j \neq k} t - j}{\prod_{j \neq k} k - j} h \ud t\\
+            &= \sum_{k=0}^n \frac{(-1)^{n-k} h f(x_k)}{k! (n-k)!} \int_0^n \prod_{0\le j\le n, j\neq k} (t-j) \ud t
+    \end{align*}
+\paragraph{精度}
+    N-C 公式是插值公式, 代数精度至少是 $n$.
+    对于 $n$ 是偶数的情况, 还容易证明 N-C 公式至少有 $n+1$ 阶代数精度.
+    \par
+\paragraph{Simposon 公式}
+    通常, N-C 公式只使用 $n=1,2,4$ 的情形. 
+    $n=1$ 时就是梯形公式, 而$n=2$ 时的公式 \[
+        I[f] = (b-a) \frac{f(a) + 4 f\left(\frac{a+b}{2}\right) + f(b) }{6}
+        \]
+    称为 Simposon 公式.\par
+    Simposon 公式代数精度为 3 阶, 可有前面公式计算余项 \[
+        R[f] = -\frac{b-a}{180} \left(\frac{b-a}{2}\right)^4 f^{(4)}(\eta)\]
+\subsubsection{复合公式}
+    基本思想为, 将 $[a,b]$ 分割为若干小区间 $[x_i, x_{i+1}]$.
+    在每个小区间上, 应用插值公式.\par
+    主要是复合梯形公式和复合 Simposon 公式.
 
+\subsection{Romberg 公式}
+    主要讨论梯形公式的 Romberg 公式.
+\subsubsection{梯形公式的递推}
+    使用递推可以有效减少通过倍增方法细化分割时需要的计算代价.\par
+    不妨设将 $[a,b]$ 等分为 $[x_i, x_{i+1}],\;0\le i <n$ 共 $n$ 个小区间,
+    使用复合梯形积分公式, 得到积分值为 $T_n$.\par
+    考虑细化划分, 增加 $x_{i+1/2} = \frac{x_i + x_{i+1}}{2}$, 则每个小区间的
+    积分从 $I_{n,i} = h \frac{f_i + f_{i+1}}{2}$ 变为 
+    $I_{2n,i}\frac{f_i + 2 f_{i + 1/2} + f_{i+1}}{4} = \frac{1}{2} I_{n,i} + \frac{1}{2} h f_{i+1/2}$.
+    整体积分 \[
+        T_{2n} = \frac{1}{2} T_n + \frac{h}{2} \sum_{i=0}^{n-1} x_{i+1/2}\]
+    \par
+    使用上式较重新计算需要更少的计算量.
+\subsubsection{Romberg 外推计算}
+\paragraph{复合梯形公式的余项}
+    可以证明复合梯形公式的余项为 $R_n = \sum_{i > 0} a_i h_n^{2 i} = o(h_n^2)$.
+\paragraph{Romberg 外推公式}
+    容易得到 $h_{2n} = \frac{1}{2} h_n$. 因此 
+    $R_{2n} = \frac{1}{4} a_i h_n^2 + \sum_{i>1} a_i \left(\frac{h_n}{2}\right)^{2 i}$,
+    因此令 \[
+        T^{(1)}_{2n} = \frac{4 T_{2n} - T_n}{3}\]
+    容易得到 $R^{(1)}_{2n} = \sum_{i > 1} a_i h_{2n}^{2 i} = o(h_n^4) = o(h_{2n})^4$.\par
+    同样, 令 \[
+        T^{(2)}_{2n} = \frac{4^2 T^{(1)}_{2n} - T^{(1)}_n}{4^2 - 1}\]
+    得到 $R^{(2)}_{2n} = o(h^6)$.
+\paragraph{Richardson 外推法}
+    即上面的公式一般形式 \[
+        T^{(m)}_n = \frac{4^m T^{(m-1)}_{2n} - T^{(m-1)}_n}{4^m -1},\quad n = 2^k, k \ge 0, m \ge 0\]
+    初始值 $ T^{(0)}_n $ 是, 将 $[a,b]$ 等分为 $[x_i, x_{i+1}],\;0\le i <n$ 共 $n$ 个小区间,
+    使用复合梯形公式的求积结果.\par
+    利用递推加速有 (其中 $x_{2k + 1} = a + (2 k + 1) \frac{b - a}{2n}$) \[
+        T^{(0)}_{2n} = \frac{1}{2} T^{(0)}_n + \sum_{k=0}^{n-1} f(x_{2 k + 1})\]
 
-% TODO
+\subsection{Gauss 公式}
+\paragraph{基本思想}
+    Gauss 公式形如 \[
+        I[f] = \sum_{k=0}^n A_k f(x_k)\]
+    其中 $A_k$, $x_k$ 是实现选取和 $f$ 无关的参数 (但是和 $a$, $b$ 有关).
+    Gauss 公式通过适当地选取 $A_k$, $x_k$ 来提高 $I$ 的代数精度, 可达 $2n + 1$ 阶.
+\paragraph{朴素构造}
+    从 $x^0, x^1, x^2 \ldots$ 开始尝试, 每次解一个关于 $A_k$, $x_k$ 的高次方程组 \[
+        \sum_{k=0}^s A_k x_k^s = \int_a^b x^s \ud x,\quad 0 \le s < \ldots \]
+    直到无解. 问题是, 高次方程求解是困难的.
+\paragraph{优化求解}
+    由前所述, Gauss 公式一定是插值的.
+    如上公式中, 如果我们求出诸插值节点 $x_k$, 则只需要解 $A_k$ 的线性方程组即可.\par
+    关于 $x_k$, 有如下定理 \begin{multline*}
+        I[f]\,\text{有}\,2n + 1\,\text{阶代数精度} \Leftrightarrow\\
+        n+1\,\text{ 次多项式 }\,\prod_{k=0}^n (x-x_k)\,\text{和任何次数界为}\,n\text{的多项式正交}
+    \end{multline*}
+    证明需要考虑插值方法的余项 $R[f] = \int_a^b \frac{f^{(n+1)}(\psi)}{(n+1)!} \omega_{n+1}(x) \ud x$.
+    
 \section{解线性方程的直接法}
 \subsection{Gauss 消元法}
 \paragraph{基本概念}
@@ -455,7 +546,7 @@
     \begin{itemize}
         \item $\|\mathbf{A} \| \ge \rho(\mathbf{A} ) = \lambda_{\max}(\mathbf{A} )$
         \item $\forall \epsilon > 0\;:\;\exists \nu\;:\;\|\mathbf{A}\|_{\nu} \le \rho(\mathbf{A}) + \epsilon$
-            证明略复杂.
+            证明略复杂. 注意这里的 $\rho(\mathbf{A}) = \max_i |\lambda_i|$.
         \item 若 $\|\mathbf{B} \| < 1$ 且 $\mathbf{I} \pm \mathbf{B} $ 非奇异, 则
             $ \| (\mathbf{I} \pm \mathbf{B})^{-1} \| \le \frac{1}{1 - \|B\|}$
     \end{itemize}
@@ -479,7 +570,10 @@
 \paragraph{条件数性质}
     \begin{itemize}
         \item $\cond(\mathbf{A} ) \ge 1$
-        \item $\cond(\mathbf{A} )_2 = \left| \frac{\lambda_{\max}}{\lambda_{\min}} \right|$
+        \item $\cond(\mathbf{A} )_2 = \left| \frac{\lambda_{\max}(\mathbf{A}^T \mathbf{A})}{\lambda_{\min}(\mathbf{A} \mathbf{A}^T)}\right|
+                = \left| \frac{\lambda_{\max}(\mathbf{A}^T \mathbf{A})}{\lambda_{\min}(\mathbf{A}^T \mathbf{A})} \right|$\\
+                证明第二个等号可以使用经典的神奇等式 $| \mathbf{I} - \mathbf{A} \mathbf{B} | = | \mathbf{I} - \mathbf{B} \mathbf{A} |$,
+                或者直接证明 $\mathbf{A} \mathbf{B}$ 特征值和 $\mathbf{B} \mathbf{A}$ 相同.
         \item $\cond(\mathbf{A} \mathbf{B}) \le \cond(\mathbf{A} )\, \cond(\mathbf{B})$
     \end{itemize}
 
@@ -522,25 +616,30 @@
 \subsubsection{Jacobi 方法}
     改写 $\mathbf{A} = \mathbf{D} + \mathbf{L} + \mathbf{U}$, 其中 $\mathbf{D}$ 是对角矩阵,
     $\mathbf{L}$ 是对角线为 0 的下三角阵, $\mathbf{U}$ 是对角线为 0 的上三角阵.
-    令 $\mathbf{M} = \mathbf{D}$, $\mathbf{N} = \mathbf{U} + \mathbf{U}$. 则有 \[
+    令 \[
+        \mathbf{M} = \mathbf{D}\]
+    则有 \[
         \mathbf{x} = - \mathbf{D}^{-1} (\mathbf{L} + \mathbf{U}) \mathbf{x} + \mathbf{D}^{-1} \mathbf{b}\]
     即 \[
         x^{(k+1)}_i = \frac{b_i - \sum_{j \neq i} a_{ji} x^{(k)}_i}{a_{ii}}\]
 \paragraph{收敛条件}
     若 $\mathbf{A}$ 为严格对角占优阵, 则 Jacobi 法收敛.\par
     若 $\mathbf{A}$ 对称, 且 $\mathbf{A}$, $2 \mathbf{D} - \mathbf{A}$ 正定, 则 Jacobi 法收敛.
+    证明需要使用如下性质: $\mathbf{A} \text{对称正定} \Rightarrow a_{ii} > 0$.
 \subsubsection{Gauss-Seidel 方法}
-    同上, 令 $\mathbf{M} = \mathbf{D}+  \mathbf{L} $, $\mathbf{N} = \mathbf{U}$,
+    同上, 令 \[\mathbf{M} = \mathbf{D}+  \mathbf{L} \]
     但是迭代的时候, 计算 $x^{(k)}_i$ 要使用 $x^{(k)}_{<i}$. \[
         \mathbf{D} \mathbf{x}^{(k+1)} = - \mathbf{L} \mathbf{x}^{(k+1)} - \mathbf{U} \mathbf{x}^{(k)} + \mathbf{b}\]
     即 \[
-        x^{(k+1)}_i = \frac{b_i - \sum_{j < i} a_{ij} x^{(k+1})_j - \sum_{j > i} a_{ij} x^{(k)}_j}{a_{ii}}\]
+        x^{(k+1)}_i = \frac{b_i - \sum_{j < i} a_{ij} x^{(k+1)}_j - \sum_{j > i} a_{ij} x^{(k)}_j}{a_{ii}}\]
 \paragraph{收敛条件}
     若 $\mathbf{A}$ 为严格对角占优阵, 则 G-S 法收敛.\par
     若 $\mathbf{A}$ 对称正定, 则 G-S 方法收敛.
 \subsubsection{超松弛迭代法}
-    引入超参数 $\omega$. 设每步 G-S 方法求出了 $\bar{\mathbf{x}}^{(k+1)}$, 则令 \[
+    同上, 引入超参数 $\omega$. 设每步 G-S 方法求出了 $\bar{\mathbf{x}}^{(k+1)}$, 则令 \[
         \mathbf{x}^{(k+1)} = (1 - \omega) \mathbf{x}^{(k)} + \omega \bar{\mathbf{x}}^{(k+1)}\]
+    相当于 \[
+        \mathbf{M} = \omega^{-1} \mathbf{D} + \mathbf{L} \]
     \par
     显然 $\omega = 1$ 时 SOR 就是 G-S 方法, 通常将 $\omega < 1$ 的情况成为欠松弛.\par
 \paragraph{收敛条件}
@@ -618,7 +717,7 @@
     根的变化很大, 则称 $p(x)$ 是病态的.\par
 % 这个直觉推导很容易, 书上也不严密. 但是严格好像还有点问题.
     通常称\[
-        \frac{q(x^*)}{[p'(x^*)}\]
+        \frac{q(x^*)}{p'(x^*)}\]
     为方程求根的条件数, 越大表示方程越病态.
 
 
@@ -653,9 +752,11 @@
 \subsubsection{幂法}
     任取 $\mathbf{v}_0$, 使得 $\mathbf{v}_0 = \sum_i \alpha_i \mathbf{x}_i$, 其中诸 $\mathbf{x}$ 是特征向量.
     要求 $\alpha_1 \neq 0$.\par
-    易证 \[
-        \forall k \in [1,n]\;:\; \lim_{m\to\infty} \frac{v_{m+1\,k}}{v_{mk}} = \lambda_1\]
+    易证 (特别注意最后的 $x_k \neq 0$) \[
+        \forall k \in [1,n]\;:\; \lim_{m\to\infty} \frac{v_{m+1\,k}}{v_{mk}} = \lambda_1,\qquad x_k \neq 0\]
     其中 \[ \mathbf{v}_i = \mathbf{A}^i \mathbf{v}_0 \]
+    简单地, 即如下. 其中 $\mathbf{a} \cdot \mathbf{b} $ 为向量点乘. \[
+        \lambda_1 = \| \lim_{k \to \infty} \mathbf{v}_{k+1} \cdot \mathbf{v}_{k}^{-1} \|_{\infty}\]
 \subsubsection{收敛速度}
     假设 $|\lambda_1| = |\lambda_2| \ldots > |\lambda_k|$, 则幂法的收敛速度由 $\frac{|\lambda_k|}{|\lambda_1|}$ 决定.
     比值越小, 收敛越快.
