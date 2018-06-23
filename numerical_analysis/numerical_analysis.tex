@@ -346,7 +346,7 @@
     Lagrange 插值积分. 等距情况下, Lagrange 插值积分简化如下
     \begin{align*}
         \int_a^b f(x) \ud x &\approx \int_a^b L_n(x) \ud x\\
-            &= \int_a^b \sum_{k=0}^n f(x_k) l(x_k)(x) \ud x\\
+            &= \int_a^b \sum_{k=0}^n f(x_k) l_k(x) \ud x\\
             &= \sum_{k=0}^n f(x_k) \int_a^b \frac{\prod_{j \neq k} x - x_j}{\prod_{j \neq k} x_k - x_j} \ud x\\
             &= \sum_{k=0}^n f(x_k) \int_0^n \frac{\prod_{j \neq k} t - j}{\prod_{j \neq k} k - j} h \ud t\\
             &= \sum_{k=0}^n \frac{(-1)^{n-k} h f(x_k)}{k! (n-k)!} \int_0^n \prod_{0\le j\le n, j\neq k} (t-j) \ud t
@@ -372,11 +372,11 @@
     主要讨论梯形公式的 Romberg 公式.
 \subsubsection{梯形公式的递推}
     使用递推可以有效减少通过倍增方法细化分割时需要的计算代价.\par
-    不妨设将 $[a,b]$ 等分为 $[x_i, x_{i+1}],\;0\le i <n$ 共 $n$ 个小区间,
+    不妨设将 $[a,b]$ 等分为 $[x_i, x_{i+1}],\;0\le i\le n$, $n+1$ 个节点, 共 $n+1$ 个小区间,
     使用复合梯形积分公式, 得到积分值为 $T_n$.\par
-    考虑细化划分, 增加 $x_{i+1/2} = \frac{x_i + x_{i+1}}{2}$, 则每个小区间的
-    积分从 $I_{n,i} = h \frac{f_i + f_{i+1}}{2}$ 变为 
-    $I_{2n,i}\frac{f_i + 2 f_{i + 1/2} + f_{i+1}}{4} = \frac{1}{2} I_{n,i} + \frac{1}{2} h f_{i+1/2}$.
+    考虑细化划分, 增加 $x_{i+1/2} = \frac{x_i + x_{i+1}}{2}$, $2n+1$ 个节点, 变成 $2n$ 个小区间.
+    每个小区间的积分从 $I_{n,i} = h \frac{f_i + f_{i+1}}{2}$ 变为 
+    $I_{2n,i} = h\frac{f_i + 2 f_{i + 1/2} + f_{i+1}}{4} = \frac{1}{2} I_{n,i} + \frac{1}{2} h f_{i+1/2}$.
     整体积分 \[
         T_{2n} = \frac{1}{2} T_n + \frac{h}{2} \sum_{i=0}^{n-1} x_{i+1/2}\]
     \par
@@ -394,12 +394,12 @@
         T^{(2)}_{2n} = \frac{4^2 T^{(1)}_{2n} - T^{(1)}_n}{4^2 - 1}\]
     得到 $R^{(2)}_{2n} = o(h^6)$.
 \paragraph{Richardson 外推法}
-    即上面的公式一般形式 \[
+    即上面的公式一般形式, 上标表示做了多少次外推, 下标表示做了多少次分割 \[
         T^{(m)}_n = \frac{4^m T^{(m-1)}_{2n} - T^{(m-1)}_n}{4^m -1},\quad n = 2^k, k \ge 0, m \ge 0\]
-    初始值 $ T^{(0)}_n $ 是, 将 $[a,b]$ 等分为 $[x_i, x_{i+1}],\;0\le i <n$ 共 $n$ 个小区间,
+    初始值 $ T^{(0)}_n $ 是, 将 $[a,b]$ 等分为 $[x_i, x_{i+1}],\;0\le i \le n$ 共 $n$ 个小区间,
     使用复合梯形公式的求积结果.\par
     利用递推加速有 (其中 $x_{2k + 1} = a + (2 k + 1) \frac{b - a}{2n}$) \[
-        T^{(0)}_{2n} = \frac{1}{2} T^{(0)}_n + \sum_{k=0}^{n-1} f(x_{2 k + 1})\]
+        T^{(0)}_{2n} = \frac{1}{2} T^{(0)}_n + \frac{h_n}{2} \sum_{k=0}^{n-1} f(x_{2 k + 1})\]
 
 \subsection{Gauss 公式}
 \paragraph{基本思想}
@@ -445,7 +445,7 @@
 
 \subsection{矩阵分解}
 \subsubsection{Doolittle 分解}
-    就是 LU 分解. \[
+    就是 LU 分解. Doolittle 分解是唯一的. \[
         \mathbf{A} = \mathbf{L} \mathbf{U}
     \]
     \par
@@ -484,7 +484,7 @@
         l_{ii} &= \sqrt{a_{ii} - \sum_{k=1}^{i-1} l_{ik}^2}
     \end{align*}
 \subsubsection{追赶法}
-    考虑非奇异对角占优三对角阵 \[
+    考虑非奇异对角占优\footnote{注意是 $|a_{ii}| > \sum_{j \neq i} |a_{ij}|$}三对角阵 \[
         \mathbf{A} = \begin{bmatrix}
             b_1 & c_1 &        &         &         &         \\
             a_2 & b_2 & c_2    &         &         &         \\
@@ -561,12 +561,13 @@
         \item $\|\mathbf{A}\|_F = \sqrt{\sum_{i,j} a_{ij}}$ 称为 Frobenius 范数
         \item $\|\mathbf{A}\|_{\infty} = \max_i \sum_j |a_{ij}|$
         \item $\|\mathbf{A}\|_1 = \max_j \sum_i |a_{ij}|$
-        \item $\|\mathbf{A}\|_2 = \sqrt{\lambda_{max}(\mathbf{A}^T \mathbf{A})}$
+        \item $\|\mathbf{A}\|_2 = \sqrt{\lambda_{\max}(\mathbf{A}^T \mathbf{A})}$
     \end{itemize}
 \paragraph{矩阵范数性质}
     \begin{itemize}
-        \item $\|\mathbf{A} \| \ge \rho(\mathbf{A} ) = \lambda_{\max}(\mathbf{A} )$
-        \item $\forall \epsilon > 0\;:\;\exists \nu\;:\;\|\mathbf{A}\|_{\nu} \le \rho(\mathbf{A}) + \epsilon$
+        \item $\|\mathbf{A} \| \ge \rho(\mathbf{A} ) = \lambda_{\max}(\mathbf{A} )$\\
+            这里注意, 不能想当然的认为 $\rho(\mathbf{A} \mathbf{B}) \le \rho(\mathbf{A}) \rho(\mathbf{B})$.
+        \item $\forall \epsilon > 0\;:\;\exists \nu\;:\;\|\mathbf{A}\|_{\nu} \le \rho(\mathbf{A}) + \epsilon$\\
             证明略复杂. 注意这里的 $\rho(\mathbf{A}) = \max_i |\lambda_i|$.
         \item 若 $\|\mathbf{B} \| < 1$ 且 $\mathbf{I} \pm \mathbf{B} $ 非奇异, 则
             $ \| (\mathbf{I} \pm \mathbf{B})^{-1} \| \le \frac{1}{1 - \|\mathbf{B}\|}$
@@ -954,6 +955,9 @@
     如果单步法满足 $\varphi(x, y, 0) = f(x, y)$, 那么称单步法和原 ode 相容.
     当且仅当单步法有 $p \ge 1$ 阶精度, 单步法和原 ode 相容.
 \subsubsection{稳定性}
+    若 \[
+        |y_n - y(x_n)| < \epsilon \Rightarrow \forall m > n\;:\; |y_m - y(x_m)| < \epsilon\]
+    则称这种数值方法稳定.
 \paragraph{基本概念}
     稳定性不仅受原 $f$ 的影响, 而且还受 $h$ 的影响. 为了标准化研究, 只考虑如下的 ode \[
         f(x, y) = \lambda y\]
