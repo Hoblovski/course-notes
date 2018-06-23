@@ -308,7 +308,7 @@
 \subsection{插值积分}
 \paragraph{代数精度}
     若数值积分方法 $I$ 满足在 $[a,b]$ 上有
-    $\forall k \in [0, m]\;:\; I[x^k] = \int_a^b x^k \ud x$,
+    $\forall k \in [0, m] \cap \Zset\;:\; I[x^k] = \int_a^b x^k \ud x$,
     但 $I[x^{m+1}] \neq \int_a^b x^{m+1} \ud x$,
     则称数值积分方法 $I$ 在 $[a,b]$ 上有代数精度 $m$.
 \subsubsection{插值求积方法}
@@ -454,8 +454,29 @@
         l_{ir} &= \frac{a_{ir} - \sum_{k=1}^{r-1} l_{ik} u_{kr}}{u_{rr}},\quad i > r
     \end{align*}
     Doolittle 分解中我们也可以选主元.
+\subsubsection{通过 Gauss 消元计算 LU 分解}
+\paragraph{LU 分解}
+    假设 Gauss 消元过后, 有\[
+        \mathbf{L}_n \mathbf{L}_{n-1} \ldots \mathbf{L}_1 \mathbf{A} = \mathbf{U}\]
+    那么 $\mathbf{A}$ 的 LU 分解是 \begin{align*}
+        \mathbf{L} &= \mathbf{L}_1^{-1} \mathbf{L}_2^{-1} \ldots \mathbf{L}_n^{-1}\\
+        \mathbf{U} &= \mathbf{U}
+    \end{align*}
+    事实上, 对于消元过程中每一次 ``第 $i$ 行乘以 $s_{ij}$ 后加到第 $j$ 行'',
+    都有一个 $l_{ij} = -s_{ij}$.
+\paragraph{PLU 分解}
+    亦称为选主元的 LU 分解.
+    假设选列主元的 Gauss 消元后, 有 \[
+        \mathbf{L}_n \mathbf{P}_n \ldots \mathbf{L}_2 \mathbf{P}_2 \mathbf{L}_1 \mathbf{P}_1 \mathbf{A} = \mathbf{U}\]
+    其中 $\mathbf{P}$ 是排列矩阵或者单位阵. 那么从 $\prod_{k=1}^j \mathbf{L}_k$ 右下子阵是单位子阵一点出发, 容易证明上式即 \[
+        \mathbf{L}_n  \ldots \mathbf{L}_2 \mathbf{L}_1 \mathbf{P}_n \ldots \mathbf{P}_2 \mathbf{P}_1 \mathbf{A} = \mathbf{U}\]
+    因此有 \begin{align*}
+        \mathbf{P} &= \mathbf{P}_1^{-1} \mathbf{P}_2^{-1} \ldots \mathbf{P}_n^{-1}\\
+        \mathbf{L} &= \mathbf{L}_1^{-1} \mathbf{L}_2^{-1} \ldots \mathbf{L}_n^{-1}\\
+        \mathbf{U} &= \mathbf{U}
+    \end{align*}
 \subsubsection{Cholesky 分解}
-    对于对称正定阵 $A$, 存在下三角矩阵 $\mathbf{L}$, \[
+    对于对称正定阵 $\mathbf{A}$, 存在下三角矩阵 $\mathbf{L}$, \[
         \mathbf{A} = \mathbf{L} \mathbf{L}^T\]
     若要求 $l_{ii} > 0$, 则 $\mathbf{L}$ 唯一.\par
     直接可以得到 \begin{align*}
@@ -534,7 +555,7 @@
         \|\mathbf{A}\|_{\nu} = \max_{\mathbf{x}} \frac{\|\mathbf{A} \mathbf{x} \|_{\nu}}{\|x\|_{\nu}}
         \]
     显然从属范数满足相容性条件 \[
-        \| \mathbf{A} \mathbf{x} \|_{\nu} \le \|\mathbf{A}\|){\nu} \|\mathbf{x}\|_{\nu}\]
+        \| \mathbf{A} \mathbf{x} \|_{\nu} \le \|\mathbf{A}\|_{\nu} \|\mathbf{x}\|_{\nu}\]
 \paragraph{常见矩阵范数}
     \begin{itemize}
         \item $\|\mathbf{A}\|_F = \sqrt{\sum_{i,j} a_{ij}}$ 称为 Frobenius 范数
@@ -548,7 +569,7 @@
         \item $\forall \epsilon > 0\;:\;\exists \nu\;:\;\|\mathbf{A}\|_{\nu} \le \rho(\mathbf{A}) + \epsilon$
             证明略复杂. 注意这里的 $\rho(\mathbf{A}) = \max_i |\lambda_i|$.
         \item 若 $\|\mathbf{B} \| < 1$ 且 $\mathbf{I} \pm \mathbf{B} $ 非奇异, 则
-            $ \| (\mathbf{I} \pm \mathbf{B})^{-1} \| \le \frac{1}{1 - \|B\|}$
+            $ \| (\mathbf{I} \pm \mathbf{B})^{-1} \| \le \frac{1}{1 - \|\mathbf{B}\|}$
     \end{itemize}
 \subsubsection{病态矩阵}
     对于方程组求解问题 $\mathbf{A} \mathbf{x} = \mathbf{b}$, 若微小的系数变动造成最后解的巨大波动,
@@ -643,7 +664,7 @@
     \par
     显然 $\omega = 1$ 时 SOR 就是 G-S 方法, 通常将 $\omega < 1$ 的情况成为欠松弛.\par
 \paragraph{收敛条件}
-    若 SOR 收敛, 则 $0 < \omega < 2$. 证明: 直接考虑 $\rho(M) < 1$ 即可, 利用 $|\mathbf{A}| = \prod_i \lambda_i$.\par
+    若 SOR 收敛, 则 $0 < \omega < 2$. 证明: 直接考虑 $\rho(\mathbf{B}) < 1$ 即可, 利用 $|\mathbf{A}| = \prod_i \lambda_i$.\par
     若 $\mathbf{A}$ 为对称正定阵, 且 $0 < \omega < 2$, 则 SOR 收敛.\par
     若 $\mathbf{A}$ 为严格对角占优阵, 且 $0 < \omega \le 1$ 则 SOR 收敛.
 
@@ -690,7 +711,7 @@
     $x_{k+1} = \varphi(x_k)$, 迭代方程 \[
         \varphi(x) = x - \frac{f(x)}{f'(x)}\]
     \par
-    基本 Newton 法局部二阶收敛.\par
+    基本 Newton 法局部二阶收敛, 但是如果 $x^*$ 是原函数的重根那么只有一阶收敛.\par
     基本 Newton 法严重依赖初值的选取, 初值选好了收敛非常快, 初值选取不好不收敛.
 \subsubsection{简化 Newton 法}
     简化 Newton 法不用每次求导数 $f'(x_k)$\[
@@ -716,9 +737,9 @@
     如果代数方程 $p(x) = \sum_{i=0}^n a_i x^i$ 对于很小的系数扰动,
     根的变化很大, 则称 $p(x)$ 是病态的.\par
 % 这个直觉推导很容易, 书上也不严密. 但是严格好像还有点问题.
-    通常称\[
+    设系数摄动是 $\epsilon q(x)$, 则通常称\[
         \frac{q(x^*)}{p'(x^*)}\]
-    为方程求根的条件数, 越大表示方程越病态.
+    为方程求根的条件数, 越大表示方程越病态. 
 
 
 \section{矩阵特征值计算}
@@ -786,24 +807,40 @@
     为 Household 变换矩阵, 亦称单位反射阵.
 \paragraph{性质}
     \begin{itemize}
-        \item $\mathbf{H} $ 是 对称阵.
-        \item $\mathbf{H} $ 是正交阵.
+        \item $\mathbf{H} $ 是 对称阵\[
+                \mathbf{H}^T = \mathbf{H}\]
+        \item $\mathbf{H} $ 是正交阵 \[
+                \mathbf{H}^T \mathbf{H} = \mathbf{I}\]
+            注意对称阵的乘积不一定对称, 所以多个单位反射阵的积只是正交, 并不一定对称.
         \item 反射性: 乘 $\mathbf{H}$ 就相当于作了平面 $\mathbf{w}^T \mathbf{x} = 0$ 的镜像.\[
             \forall \mathbf{v} = \mathbf{x} + \mathbf{y},\,\mathbf{w}^T \mathbf{x} = 0,\, \mathbf{y} \parallel \mathbf{w}\;:\;
             \mathbf{H} \mathbf{v} = \mathbf{x} - \mathbf{y} \]
+        \item 反射性: 可以在等模的前提下做任何 $\mathbf{x}$到 $\mathbf{y}$ 的变换 
+            \[\forall \mathbf{x}\;:\;\forall \mathbf{y}, \|x\|_2=\|y\|_2\;:\;%
+            \exists \text{单位反射阵} \,\mathbf{H} \;:\; \mathbf{H} \mathbf{x} = \mathbf{y}\]
+            容易从几何意义得到, $\mathbf{w} = \frac{\mathbf{x} - \mathbf{y}}{\|\mathbf{x} - \mathbf{y}\|_2}$.
     \end{itemize}
 \paragraph{约化定理}
     对于 $\mathbf{x} \neq \mathbf{0} $, 存在 $ \mathbf{H}$ 使得 \[
         \mathbf{H} \mathbf{x} = \sigma \mathbf{e}_1\]
     其中 \begin{align*}
-        \sigma &= \sgn (x_1) \|\mathbf{x} \|_2\\
+        \sigma &= \begin{cases}
+            \sgn(x_1) \|\mathbf{x} \|_2 & x_1 \neq 0\\
+            \|\mathbf{x}\|_2 & x_1  = 0
+        \end{cases}\\
         \mathbf{u}& = \mathbf{x} + \sigma \mathbf{e}_1\\
         \beta &= \frac{\|\mathbf{u}\|_2^2}{2}\\
         \mathbf{H} &= \mathbf{I} - \beta^{-1} \mathbf{u} \mathbf{u}^T
-    \end{align*}
+    \end{align*}\par
+    事实上, 约化定理就是反射性第二条的简单应用.
+    基本目的是将 $\mathbf{x}$ 变成 $\alpha \mathbf{e}_1$.
+    这种情况下只能 $\alpha = \pm \|\mathbf{x}\|_2$,
+    又为了 $\mathbf{x} - \alpha \mathbf{e}_1 \neq \mathbf{0}$,
+    所以 $\alpha = -\sgn(x_1) \|\mathbf{x}\|_2$. 之后自然地就得到了 $\mathbf{H}$.
 \subsubsection{QR分解}
-    对于任何非奇异的矩阵 $A$, 一定存在正交阵$Q$,
-    满足 $QA=R$, 其中 $R$ 是上三角阵.
+    对于任何非奇异的矩阵 $\mathbf{A}$, 一定存在正交阵$\mathbf{Q}$,
+    满足 $\mathbf{Q} \mathbf{A}=\mathbf{R}$, 其中 $\mathbf{R}$ 是上三角阵.
+    如果要求 $ \mathbf{R} $ 对角元素为正, 那么 QR 分解唯一.
 \paragraph{分解过程}
     一般地, 考虑 \[
         \mathbf{H}_i \mathbf{A} = \begin{bmatrix}
@@ -824,7 +861,7 @@
         $ \mathbf{B}_{i+1} \in \Rset^{i+1 \times (n-i-1)}$, $\mathbf{C}_{i+1} \in \Rset^{(n-i-1) \times (n-i-1)}$ 且 $\mathbf{C}$ 可逆.\par
     如上, 从 $ \mathbf{H}_0 = \mathbf{I}_n$ 开始, 最后就可以得到 $ \mathbf{H}_n \mathbf{A} = \mathbf{U}_n$.
 \paragraph{QR 分解定理}
-    非奇异矩阵 $A \in \Rset^{n \times n}$,
+    非奇异矩阵 $\mathbf{A} \in \Rset^{n \times n}$,
     存在上三角阵 $\mathbf{R}$ 和正交阵 $\mathbf{Q}$, 使得 $\mathbf{A} = \mathbf{Q} \mathbf{R} $,
     称为 $\mathbf{A} $ 的 QR 分解.
     如果要求 $\mathbf{R}$ 对角线元素为正, 则 $\mathbf{A} $的 QR 分解唯一.\par
@@ -920,7 +957,7 @@
 \paragraph{基本概念}
     稳定性不仅受原 $f$ 的影响, 而且还受 $h$ 的影响. 为了标准化研究, 只考虑如下的 ode \[
         f(x, y) = \lambda y\]
-    解析解为 $y = e^{\lambda x}$, 要求 $\mathbb{Re} \lambda < 0$.\par
+    解析解为 $y = e^{\lambda x}$, 要求 $\Re \lambda < 0$.\par
     使得迭代法收敛的 $|h\lambda|$ 构成的 $\Cset$ 区域称为绝对收敛域, 实轴上部分成为绝对收敛区间.\par
     以显式 Euler 法为例子, 上述 ode 的迭代式为 $y_{n+1} = (1+h\lambda) y_n$.
     因此 $\epsilon_{n+1} = (1 + h\lambda) \epsilon_{n}$, 只要 $|1 + h\lambda| < 1$
